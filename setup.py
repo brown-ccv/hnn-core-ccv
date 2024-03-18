@@ -1,34 +1,33 @@
 #! /usr/bin/env python
-import platform
-import os.path as op
 import os
-import subprocess
+import os.path as op
+import platform
 import shutil
-
-from setuptools import setup, find_packages
-
-from distutils.command.build_py import build_py
+import subprocess
 from distutils.cmd import Command
+from distutils.command.build_py import build_py
+
+from setuptools import find_packages, setup
 
 descr = """Code for biophysical simulation of a cortical column using Neuron"""
 
-DISTNAME = 'hnn-core'
+DISTNAME = "hnn-core"
 DESCRIPTION = descr
-MAINTAINER = 'Mainak Jas'
-MAINTAINER_EMAIL = 'mainakjas@gmail.com'
-URL = ''
-LICENSE = 'BSD (3-clause)'
-DOWNLOAD_URL = 'http://github.com/jonescompneurolab/hnn-core'
+MAINTAINER = "Mainak Jas"
+MAINTAINER_EMAIL = "mainakjas@gmail.com"
+URL = ""
+LICENSE = "BSD (3-clause)"
+DOWNLOAD_URL = "http://github.com/jonescompneurolab/hnn-core"
 
 # get the version
 version = None
-with open(os.path.join('hnn_core', '__init__.py'), 'r') as fid:
+with open(os.path.join("hnn_core", "__init__.py"), "r") as fid:
     for line in (line.strip() for line in fid):
-        if line.startswith('__version__'):
-            version = line.split('=')[1].strip().strip('\'')
+        if line.startswith("__version__"):
+            version = line.split("=")[1].strip().strip("'")
             break
 if version is None:
-    raise RuntimeError('Could not determine version')
+    raise RuntimeError("Could not determine version")
 
 
 # test install with:
@@ -51,15 +50,19 @@ class BuildMod(Command):
     def run(self):
         print("=> Building mod files ...")
 
-        if platform.system() == 'Windows':
+        if platform.system() == "Windows":
             shell = True
         else:
             shell = False
 
-        mod_path = op.join(op.dirname(__file__), 'hnn_core', 'mod')
-        process = subprocess.Popen(['nrnivmodl'], cwd=mod_path,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE, shell=shell)
+        mod_path = op.join(op.dirname(__file__), "hnn_core", "mod")
+        process = subprocess.Popen(
+            ["nrnivmodl"],
+            cwd=mod_path,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=shell,
+        )
         outs, errs = process.communicate()
         print(outs)
 
@@ -68,8 +71,8 @@ class build_py_mod(build_py):
     def run(self):
         self.run_command("build_mod")
 
-        build_dir = op.join(self.build_lib, 'hnn_core', 'mod')
-        mod_path = op.join(op.dirname(__file__), 'hnn_core', 'mod')
+        build_dir = op.join(self.build_lib, "hnn_core", "mod")
+        mod_path = op.join(op.dirname(__file__), "hnn_core", "mod")
         shutil.copytree(mod_path, build_dir)
 
         build_py.run(self)
@@ -77,56 +80,79 @@ class build_py_mod(build_py):
 
 if __name__ == "__main__":
     extras = {
-        'opt': ['scikit-learn'],
-        'parallel': ['joblib', 'psutil'],
-        'test': ['flake8', 'pytest', 'pytest-cov', ],
-        'docs': ['mne', 'nibabel', 'pooch', 'tdqm',
-                 'sphinx', 'nbsphinx', 'sphinx-gallery',
-                 'sphinx_bootstrap_theme', 'sphinx-copybutton',
-                 'pillow', 'numpydoc',
-                 ],
-        'gui': ['ipywidgets>=8.0.0', 'ipykernel', 'ipympl', 'voila', ],
+        "opt": ["scikit-learn"],
+        "parallel": ["joblib", "psutil"],
+        "test": [
+            "flake8",
+            "flake8-bugbear",
+            "black",
+            "pre-commit",
+            "isort",
+            "pytest",
+            "pytest-cov",
+        ],
+        "docs": [
+            "mne",
+            "nibabel",
+            "pooch",
+            "tdqm",
+            "sphinx",
+            "nbsphinx",
+            "sphinx-gallery",
+            "sphinx_bootstrap_theme",
+            "sphinx-copybutton",
+            "pillow",
+            "numpydoc",
+        ],
+        "gui": [
+            "ipywidgets>=8.0.0",
+            "ipykernel",
+            "ipympl",
+            "voila",
+        ],
     }
-    extras['dev'] = (extras['opt'] + extras['parallel'] + extras['test'] +
-                     extras['docs'] + extras['gui']
-                     )
+    extras["dev"] = (
+        extras["opt"]
+        + extras["parallel"]
+        + extras["test"]
+        + extras["docs"]
+        + extras["gui"]
+    )
 
-
-    setup(name=DISTNAME,
-          maintainer=MAINTAINER,
-          maintainer_email=MAINTAINER_EMAIL,
-          description=DESCRIPTION,
-          license=LICENSE,
-          url=URL,
-          version=version,
-          download_url=DOWNLOAD_URL,
-          long_description=open('README.rst').read(),
-          classifiers=[
-              'Intended Audience :: Science/Research',
-              'Intended Audience :: Developers',
-              'License :: OSI Approved',
-              'Programming Language :: Python',
-              'Topic :: Software Development',
-              'Topic :: Scientific/Engineering',
-              'Operating System :: Microsoft :: Windows',
-              'Operating System :: POSIX',
-              'Operating System :: Unix',
-              'Operating System :: MacOS',
-          ],
-          platforms='any',
-          install_requires=[
-              'numpy >=1.14',
-              'NEURON >=7.7; platform_system != "Windows"',
-              'matplotlib>=3.5.3',
-              'scipy',
-              'h5io'
-          ],
-          extras_require=extras,
-          python_requires='>=3.8',
-          packages=find_packages(),
-          package_data={'hnn_core': [
-              'param/*.json',
-              'gui/*.ipynb']},
-          cmdclass={'build_py': build_py_mod, 'build_mod': BuildMod},
-          entry_points={'console_scripts': ['hnn-gui=hnn_core.gui.gui:launch']}
-          )
+    setup(
+        name=DISTNAME,
+        maintainer=MAINTAINER,
+        maintainer_email=MAINTAINER_EMAIL,
+        description=DESCRIPTION,
+        license=LICENSE,
+        url=URL,
+        version=version,
+        download_url=DOWNLOAD_URL,
+        long_description=open("README.rst").read(),
+        classifiers=[
+            "Intended Audience :: Science/Research",
+            "Intended Audience :: Developers",
+            "License :: OSI Approved",
+            "Programming Language :: Python",
+            "Topic :: Software Development",
+            "Topic :: Scientific/Engineering",
+            "Operating System :: Microsoft :: Windows",
+            "Operating System :: POSIX",
+            "Operating System :: Unix",
+            "Operating System :: MacOS",
+        ],
+        platforms="any",
+        install_requires=[
+            "numpy >=1.14",
+            'NEURON >=7.7; platform_system != "Windows"',
+            "matplotlib>=3.5.3",
+            "scipy",
+            "h5io",
+        ],
+        extras_require=extras,
+        python_requires=">=3.8",
+        packages=find_packages(),
+        package_data={"hnn_core": ["param/*.json", "gui/*.ipynb"]},
+        cmdclass={"build_py": build_py_mod, "build_mod": BuildMod},
+        entry_points={"console_scripts": ["hnn-gui=hnn_core.gui.gui:launch"]},
+    )
