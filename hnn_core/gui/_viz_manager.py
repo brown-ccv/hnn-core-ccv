@@ -10,34 +10,45 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from IPython.display import display
-from ipywidgets import (Box, Button, Dropdown, FloatText, HBox, Label, Layout,
-                        Output, Tab, VBox, link)
+from ipywidgets import (
+    Box,
+    Button,
+    Dropdown,
+    FloatText,
+    HBox,
+    Label,
+    Layout,
+    Output,
+    Tab,
+    VBox,
+    link,
+)
 
-from hnn_core.dipole import average_dipoles, _rmse
+from hnn_core.dipole import _rmse, average_dipoles
 from hnn_core.gui._logging import logger
 from hnn_core.viz import plot_dipole
 
-_fig_placeholder = 'Run simulation to add figures here.'
+_fig_placeholder = "Run simulation to add figures here."
 
 _plot_types = [
-    'current dipole',
-    'layer2 dipole',
-    'layer5 dipole',
-    'input histogram',
-    'spikes',
-    'PSD',
-    'spectrogram',
-    'network',
+    "current dipole",
+    "layer2 dipole",
+    "layer5 dipole",
+    "input histogram",
+    "spikes",
+    "PSD",
+    "spectrogram",
+    "network",
 ]
 
 _no_overlay_plot_types = [
-    'network',
-    'spectrogram',
-    'spikes',
-    'input histogram',
+    "network",
+    "spectrogram",
+    "spikes",
+    "input histogram",
 ]
 
-_ext_data_disabled_plot_types = ['spikes', 'input histogram', 'network']
+_ext_data_disabled_plot_types = ["spikes", "input histogram", "network"]
 
 _spectrogram_color_maps = [
     "viridis",
@@ -49,15 +60,15 @@ _spectrogram_color_maps = [
 
 fig_templates = {
     "2row x 1col (1:3)": {
-        "kwargs": "gridspec_kw={\"height_ratios\":[1,3]}",
+        "kwargs": 'gridspec_kw={"height_ratios":[1,3]}',
         "mosaic": "00\n11",
     },
     "2row x 1col (1:1)": {
-        "kwargs": "gridspec_kw={\"height_ratios\":[1,1]}",
+        "kwargs": 'gridspec_kw={"height_ratios":[1,1]}',
         "mosaic": "00\n11",
     },
     "1row x 2col (1:1)": {
-        "kwargs": "gridspec_kw={\"height_ratios\":[1,1]}",
+        "kwargs": 'gridspec_kw={"height_ratios":[1,1]}',
         "mosaic": "01\n01",
     },
     "single figure": {
@@ -65,15 +76,14 @@ fig_templates = {
         "mosaic": "00\n00",
     },
     "2row x 2col (1:1)": {
-        "kwargs": "gridspec_kw={\"height_ratios\":[1,1]}",
+        "kwargs": 'gridspec_kw={"height_ratios":[1,1]}',
         "mosaic": "01\n23",
     },
 }
 
 
-def check_sim_plot_types(
-        new_sim_name, plot_type_selection, target_selection, data):
-    if data["simulations"][new_sim_name.new]['net'] is None:
+def check_sim_plot_types(new_sim_name, plot_type_selection, target_selection, data):
+    if data["simulations"][new_sim_name.new]["net"] is None:
         plot_type_selection.options = [
             pt for pt in _plot_types if pt not in _ext_data_disabled_plot_types
         ]
@@ -82,18 +92,17 @@ def check_sim_plot_types(
     # deal with target data
     all_possible_targets = list(data["simulations"].keys())
     all_possible_targets.remove(new_sim_name.new)
-    target_selection.options = all_possible_targets + ['None']
-    target_selection.value = 'None'
+    target_selection.options = all_possible_targets + ["None"]
+    target_selection.value = "None"
 
 
 def target_comparison_change(new_target_name, simulation_selection, data):
-    """Triggered when the target data is turned on or changed.
-    """
+    """Triggered when the target data is turned on or changed."""
     pass
 
 
 def plot_type_coupled_change(new_plot_type, target_data_selection):
-    if new_plot_type != 'current dipole':
+    if new_plot_type != "current dipole":
         target_data_selection.disabled = True
     else:
         target_data_selection.disabled = False
@@ -113,6 +122,7 @@ def unlink_relink(attribute):
                widgets
 
     """
+
     def _unlink_relink(f):
         @wraps(f)
         def wrapper(self, *args, **kwargs):
@@ -127,7 +137,9 @@ def unlink_relink(attribute):
             link_attribute.link()
 
             return result
+
         return wrapper
+
     return _unlink_relink
 
 
@@ -156,14 +168,15 @@ def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
         A dict that specifies the preprocessing and style of plots.
     """
     # Make sure that visualization does not change the original data
-    dpls_copied = copy.deepcopy(single_simulation['dpls'])
-    net_copied = copy.deepcopy(single_simulation['net'])
+    dpls_copied = copy.deepcopy(single_simulation["dpls"])
+    net_copied = copy.deepcopy(single_simulation["net"])
     for dpl in dpls_copied:
-        if plot_config['dipole_smooth'] > 0:
-            dpl.smooth(plot_config['dipole_smooth']).scale(
-                plot_config['dipole_scaling'])
+        if plot_config["dipole_smooth"] > 0:
+            dpl.smooth(plot_config["dipole_smooth"]).scale(
+                plot_config["dipole_scaling"]
+            )
         else:
-            dpl.scale(plot_config['dipole_scaling'])
+            dpl.scale(plot_config["dipole_scaling"])
 
     if net_copied is None:
         assert plot_type not in _ext_data_disabled_plot_types
@@ -172,35 +185,38 @@ def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
     # x and y axis are hidden after plotting some functions.
     ax.get_yaxis().set_visible(True)
     ax.get_xaxis().set_visible(True)
-    if plot_type == 'spikes':
+    if plot_type == "spikes":
         if net_copied.cell_response:
             net_copied.cell_response.plot_spikes_raster(ax=ax, show=False)
 
-    elif plot_type == 'input histogram':
+    elif plot_type == "input histogram":
         if net_copied.cell_response:
             net_copied.cell_response.plot_spikes_hist(ax=ax, show=False)
 
-    elif plot_type == 'PSD':
+    elif plot_type == "PSD":
         if len(dpls_copied) > 0:
             color = ax._get_lines.get_next_color()
-            dpls_copied[0].plot_psd(fmin=0, fmax=50, ax=ax, color=color,
-                                    label=sim_name, show=False)
+            dpls_copied[0].plot_psd(
+                fmin=0, fmax=50, ax=ax, color=color, label=sim_name, show=False
+            )
 
-    elif plot_type == 'spectrogram':
+    elif plot_type == "spectrogram":
         if len(dpls_copied) > 0:
             min_f = 10.0
-            max_f = plot_config['max_spectral_frequency']
+            max_f = plot_config["max_spectral_frequency"]
             step_f = 1.0
             freqs = np.arange(min_f, max_f, step_f)
-            n_cycles = freqs / 8.
+            n_cycles = freqs / 8.0
             dpls_copied[0].plot_tfr_morlet(
                 freqs,
                 n_cycles=n_cycles,
-                colormap=plot_config['spectrogram_cm'],
-                ax=ax, colorbar_inside=True,
-                show=False)
+                colormap=plot_config["spectrogram_cm"],
+                ax=ax,
+                colorbar_inside=True,
+                show=False,
+            )
 
-    elif 'dipole' in plot_type:
+    elif "dipole" in plot_type:
         if len(dpls_copied) > 0:
             if len(dpls_copied) > 1:
                 label = f"{sim_name}: average"
@@ -208,46 +224,50 @@ def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
                 label = sim_name
 
             color = ax._get_lines.get_next_color()
-            if plot_type == 'current dipole':
-                plot_dipole(dpls_copied,
-                            ax=ax,
-                            label=label,
-                            color=color,
-                            average=True,
-                            show=False)
+            if plot_type == "current dipole":
+                plot_dipole(
+                    dpls_copied,
+                    ax=ax,
+                    label=label,
+                    color=color,
+                    average=True,
+                    show=False,
+                )
             else:
                 layer_namemap = {
                     "layer2": "L2",
                     "layer5": "L5",
                 }
-                plot_dipole(dpls_copied,
-                            ax=ax,
-                            label=label,
-                            color=color,
-                            layer=layer_namemap[plot_type.split(" ")[0]],
-                            average=True,
-                            show=False)
+                plot_dipole(
+                    dpls_copied,
+                    ax=ax,
+                    label=label,
+                    color=color,
+                    layer=layer_namemap[plot_type.split(" ")[0]],
+                    average=True,
+                    show=False,
+                )
         else:
             print("No dipole data")
 
-    elif plot_type == 'network':
+    elif plot_type == "network":
         if net_copied:
             with plt.ioff():
                 _fig = plt.figure()
-                _ax = _fig.add_subplot(111, projection='3d')
+                _ax = _fig.add_subplot(111, projection="3d")
                 net_copied.plot_cells(ax=_ax, show=False)
                 io_buf = io.BytesIO()
-                _fig.savefig(io_buf, format='raw')
+                _fig.savefig(io_buf, format="raw")
                 io_buf.seek(0)
-                img_arr = np.reshape(np.frombuffer(io_buf.getvalue(),
-                                     dtype=np.uint8),
-                                     newshape=(int(_fig.bbox.bounds[3]),
-                                     int(_fig.bbox.bounds[2]), -1))
+                img_arr = np.reshape(
+                    np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
+                    newshape=(int(_fig.bbox.bounds[3]), int(_fig.bbox.bounds[2]), -1),
+                )
                 io_buf.close()
                 _ = ax.imshow(img_arr)
 
     # set up alignment
-    if plot_type not in ['network', 'PSD']:
+    if plot_type not in ["network", "PSD"]:
         margin_x = 0
         max_x = max([dpl.times[-1] for dpl in dpls_copied])
         ax.set_xlim(left=-margin_x, right=max_x + margin_x)
@@ -256,11 +276,11 @@ def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
 
 
 def _static_rerender(widgets, fig, fig_idx):
-    logger.debug('_static_re_render is called')
-    figs_tabs = widgets['figs_tabs']
+    logger.debug("_static_re_render is called")
+    figs_tabs = widgets["figs_tabs"]
     titles = figs_tabs.titles
     fig_tab_idx = titles.index(_idx2figname(fig_idx))
-    fig_output = widgets['figs_tabs'].children[fig_tab_idx]
+    fig_output = widgets["figs_tabs"].children[fig_tab_idx]
     fig_output.clear_output()
     with fig_output:
         fig.tight_layout()
@@ -273,11 +293,22 @@ def _dynamic_rerender(fig):
     fig.tight_layout()
 
 
-def _plot_on_axes(b, widgets_simulation, widgets_plot_type,
-                  target_simulations,
-                  spectrogram_colormap_selection, dipole_smooth,
-                  max_spectral_frequency, dipole_scaling, widgets, data,
-                  fig_idx, fig, ax, existing_plots):
+def _plot_on_axes(
+    b,
+    widgets_simulation,
+    widgets_plot_type,
+    target_simulations,
+    spectrogram_colormap_selection,
+    dipole_smooth,
+    max_spectral_frequency,
+    dipole_scaling,
+    widgets,
+    data,
+    fig_idx,
+    fig,
+    ax,
+    existing_plots,
+):
     """Plotting different types of data on the given axes.
 
     Now this function is also responsible for comparing multiple simulations,
@@ -323,34 +354,39 @@ def _plot_on_axes(b, widgets_simulation, widgets_plot_type,
     # freeze plot type
     widgets_plot_type.disabled = True
 
-    single_simulation = data['simulations'][sim_name]
+    single_simulation = data["simulations"][sim_name]
 
     plot_config = {
         "max_spectral_frequency": max_spectral_frequency.value,
         "dipole_scaling": dipole_scaling.value,
         "dipole_smooth": dipole_smooth.value,
-        "spectrogram_cm": spectrogram_colormap_selection.value
+        "spectrogram_cm": spectrogram_colormap_selection.value,
     }
 
-    dpls_processed = _update_ax(fig, ax, single_simulation, sim_name,
-                                plot_type, plot_config)
+    dpls_processed = _update_ax(
+        fig, ax, single_simulation, sim_name, plot_type, plot_config
+    )
 
     # If target_simulations is not None and we are plotting a dipole,
     # we need to plot the target dipole as well.
-    if target_simulations.value in data['simulations'].keys(
-    ) and plot_type == 'current dipole':
+    if (
+        target_simulations.value in data["simulations"].keys()
+        and plot_type == "current dipole"
+    ):
 
         target_sim_name = target_simulations.value
-        target_sim = data['simulations'][target_sim_name]
+        target_sim = data["simulations"][target_sim_name]
 
         # plot the target dipole.
         # disable scaling for the target dipole.
-        plot_config['dipole_scaling'] = 1.
+        plot_config["dipole_scaling"] = 1.0
 
         # plot the target dipole.
         target_dpl_processed = _update_ax(
-            fig, ax, target_sim, target_sim_name, plot_type,
-            plot_config)[0]  # we assume there is only one dipole.
+            fig, ax, target_sim, target_sim_name, plot_type, plot_config
+        )[
+            0
+        ]  # we assume there is only one dipole.
 
         # calculate the RMSE between the two dipoles.
         t0 = 0.0
@@ -361,45 +397,58 @@ def _plot_on_axes(b, widgets_simulation, widgets_plot_type,
             dpl = dpls_processed
         rmse = _rmse(dpl, target_dpl_processed, t0, tstop)
         # Show the RMSE between the two dipoles.
-        ax.annotate(f'RMSE({sim_name}, {target_sim_name}): {rmse:.4f}',
-                    xy=(0.95, 0.05),
-                    xycoords='axes fraction',
-                    horizontalalignment='right',
-                    verticalalignment='bottom',
-                    fontsize=12)
+        ax.annotate(
+            f"RMSE({sim_name}, {target_sim_name}): {rmse:.4f}",
+            xy=(0.95, 0.05),
+            xycoords="axes fraction",
+            horizontalalignment="right",
+            verticalalignment="bottom",
+            fontsize=12,
+        )
 
-    existing_plots.children = (*existing_plots.children,
-                               Label(f"{sim_name}: {plot_type}"))
-    if data['use_ipympl'] is False:
+    existing_plots.children = (
+        *existing_plots.children,
+        Label(f"{sim_name}: {plot_type}"),
+    )
+    if data["use_ipympl"] is False:
         _static_rerender(widgets, fig, fig_idx)
     else:
         _dynamic_rerender(fig)
 
 
-def _clear_axis(b, widgets, data, fig_idx, fig, ax, widgets_plot_type,
-                existing_plots, add_plot_button):
+def _clear_axis(
+    b,
+    widgets,
+    data,
+    fig_idx,
+    fig,
+    ax,
+    widgets_plot_type,
+    existing_plots,
+    add_plot_button,
+):
     ax.clear()
 
     # remove attached colorbar if exists
-    if hasattr(fig, f'_cbar-ax-{id(ax)}'):
-        getattr(fig, f'_cbar-ax-{id(ax)}').ax.remove()
-        delattr(fig, f'_cbar-ax-{id(ax)}')
+    if hasattr(fig, f"_cbar-ax-{id(ax)}"):
+        getattr(fig, f"_cbar-ax-{id(ax)}").ax.remove()
+        delattr(fig, f"_cbar-ax-{id(ax)}")
 
-    ax.set_facecolor('w')
-    ax.set_aspect('auto')
+    ax.set_facecolor("w")
+    ax.set_aspect("auto")
     widgets_plot_type.disabled = False
     add_plot_button.disabled = False
     existing_plots.children = ()
-    if data['use_ipympl'] is False:
+    if data["use_ipympl"] is False:
         _static_rerender(widgets, fig, fig_idx)
     else:
         _dynamic_rerender(fig)
 
 
 def _get_ax_control(widgets, data, fig_idx, fig, ax):
-    analysis_style = {'description_width': '200px'}
+    analysis_style = {"description_width": "200px"}
     layout = Layout(width="98%")
-    simulation_names = tuple(data['simulations'].keys())
+    simulation_names = tuple(data["simulations"].keys())
     sim_name_default = simulation_names[-1]
     if len(simulation_names) == 0:
         simulation_names = [
@@ -409,13 +458,13 @@ def _get_ax_control(widgets, data, fig_idx, fig, ax):
     simulation_selection = Dropdown(
         options=simulation_names,
         value=sim_name_default,
-        description='Simulation Data:',
+        description="Simulation Data:",
         disabled=False,
         layout=layout,
         style=analysis_style,
     )
 
-    if data['simulations'][sim_name_default]['net'] is None:
+    if data["simulations"][sim_name_default]["net"] is None:
         valid_plot_types = [
             pt for pt in _plot_types if pt not in _ext_data_disabled_plot_types
         ]
@@ -425,65 +474,70 @@ def _get_ax_control(widgets, data, fig_idx, fig, ax):
     plot_type_selection = Dropdown(
         options=valid_plot_types,
         value=valid_plot_types[0],
-        description='Type:',
+        description="Type:",
         disabled=False,
         layout=layout,
         style=analysis_style,
     )
 
     target_data_selection = Dropdown(
-        options=simulation_names[:-1] + ('None',),
-        value='None',
-        description='Data to Compare:',
+        options=simulation_names[:-1] + ("None",),
+        value="None",
+        description="Data to Compare:",
         disabled=False,
         layout=layout,
         style=analysis_style,
     )
 
     spectrogram_colormap_selection = Dropdown(
-        description='Spectrogram Colormap:',
+        description="Spectrogram Colormap:",
         options=[(cm, cm) for cm in _spectrogram_color_maps],
         value=_spectrogram_color_maps[0],
         layout=layout,
         style=analysis_style,
     )
-    dipole_smooth = FloatText(value=30,
-                              description='Dipole Smooth Window (ms):',
-                              disabled=False,
-                              layout=layout,
-                              style=analysis_style)
-    dipole_scaling = FloatText(value=3000,
-                               description='Dipole Scaling:',
-                               disabled=False,
-                               layout=layout,
-                               style=analysis_style)
+    dipole_smooth = FloatText(
+        value=30,
+        description="Dipole Smooth Window (ms):",
+        disabled=False,
+        layout=layout,
+        style=analysis_style,
+    )
+    dipole_scaling = FloatText(
+        value=3000,
+        description="Dipole Scaling:",
+        disabled=False,
+        layout=layout,
+        style=analysis_style,
+    )
 
     max_spectral_frequency = FloatText(
         value=100,
-        description='Max Spectral Frequency (Hz):',
+        description="Max Spectral Frequency (Hz):",
         disabled=False,
         layout=layout,
-        style=analysis_style)
+        style=analysis_style,
+    )
 
     existing_plots = VBox([])
 
-    plot_button = Button(description='Add plot')
-    clear_button = Button(description='Clear axis')
+    plot_button = Button(description="Add plot")
+    clear_button = Button(description="Clear axis")
 
     def _on_sim_data_change(new_sim_name):
         return check_sim_plot_types(
-            new_sim_name, plot_type_selection, target_data_selection, data)
+            new_sim_name, plot_type_selection, target_data_selection, data
+        )
 
     def _on_target_comparison_change(new_target_name):
-        return target_comparison_change(new_target_name, simulation_selection,
-                                        data)
+        return target_comparison_change(new_target_name, simulation_selection, data)
 
     def _on_plot_type_change(new_plot_type):
         return plot_type_coupled_change(new_plot_type, target_data_selection)
 
-    simulation_selection.observe(_on_sim_data_change, 'value')
-    target_data_selection.observe(_on_target_comparison_change, 'value')
-    plot_type_selection.observe(_on_plot_type_change, 'value')
+    simulation_selection.observe(_on_sim_data_change, "value")
+    target_data_selection.observe(_on_target_comparison_change, "value")
+    plot_type_selection.observe(_on_plot_type_change, "value")
 
     clear_button.on_click(
         partial(
@@ -496,7 +550,8 @@ def _get_ax_control(widgets, data, fig_idx, fig, ax):
             widgets_plot_type=plot_type_selection,
             existing_plots=existing_plots,
             add_plot_button=plot_button,
-        ))
+        )
+    )
 
     plot_button.on_click(
         partial(
@@ -514,22 +569,32 @@ def _get_ax_control(widgets, data, fig_idx, fig, ax):
             fig=fig,
             ax=ax,
             existing_plots=existing_plots,
-        ))
+        )
+    )
 
-    vbox = VBox([
-        simulation_selection, plot_type_selection, target_data_selection,
-        dipole_smooth, dipole_scaling, max_spectral_frequency,
-        spectrogram_colormap_selection,
-        HBox(
-            [plot_button, clear_button],
-            layout=Layout(justify_content='space-between'),
-        ), existing_plots], layout=Layout(width="98%"))
+    vbox = VBox(
+        [
+            simulation_selection,
+            plot_type_selection,
+            target_data_selection,
+            dipole_smooth,
+            dipole_scaling,
+            max_spectral_frequency,
+            spectrogram_colormap_selection,
+            HBox(
+                [plot_button, clear_button],
+                layout=Layout(justify_content="space-between"),
+            ),
+            existing_plots,
+        ],
+        layout=Layout(width="98%"),
+    )
 
     return vbox
 
 
 def _close_figure(b, widgets, data, fig_idx):
-    fig_related_widgets = [widgets['figs_tabs'], widgets['axes_config_tabs']]
+    fig_related_widgets = [widgets["figs_tabs"], widgets["axes_config_tabs"]]
     for w_idx, tab in enumerate(fig_related_widgets):
         # Get tab object's list of children and their titles
         tab_children = list(tab.children)
@@ -547,27 +612,27 @@ def _close_figure(b, widgets, data, fig_idx):
         # If the figure tab group...
         if w_idx == 0:
             # Close figure and delete the data
-            plt.close(data['figs'][fig_idx])
-            data['figs'].pop(fig_idx)
+            plt.close(data["figs"][fig_idx])
+            data["figs"].pop(fig_idx)
             # Redisplay the remaining children
             n_tabs = len(tab.children)
             for idx in range(n_tabs):
                 _fig_idx = _figname2idx(tab.get_title(idx))
-                assert _fig_idx in data['figs'].keys()
+                assert _fig_idx in data["figs"].keys()
 
                 tab.children[idx].clear_output()
                 with tab.children[idx]:
-                    display(data['figs'][_fig_idx].canvas)
+                    display(data["figs"][_fig_idx].canvas)
 
             # If all children have been deleted display the placeholder
             if n_tabs == 0:
-                widgets['figs_output'].clear_output()
-                with widgets['figs_output']:
+                widgets["figs_output"].clear_output()
+                with widgets["figs_output"]:
                     display(Label(_fig_placeholder))
 
 
 def _add_axes_controls(widgets, data, fig, axd):
-    fig_idx = data['fig_idx']['idx']
+    fig_idx = data["fig_idx"]["idx"]
 
     controls = Tab()
     children = [
@@ -576,63 +641,66 @@ def _add_axes_controls(widgets, data, fig, axd):
     ]
     controls.children = children
     for i in range(len(children)):
-        controls.set_title(i, f'ax{i}')
+        controls.set_title(i, f"ax{i}")
 
-    close_fig_button = Button(description=f'Close {_idx2figname(fig_idx)}',
-                              button_style='danger',
-                              icon='close',
-                              layout=Layout(width="98%"))
+    close_fig_button = Button(
+        description=f"Close {_idx2figname(fig_idx)}",
+        button_style="danger",
+        icon="close",
+        layout=Layout(width="98%"),
+    )
     close_fig_button.on_click(
-        partial(_close_figure, widgets=widgets, data=data, fig_idx=fig_idx))
+        partial(_close_figure, widgets=widgets, data=data, fig_idx=fig_idx)
+    )
 
-    n_tabs = len(widgets['axes_config_tabs'].children)
-    widgets['axes_config_tabs'].children = widgets[
-        'axes_config_tabs'].children + (VBox([close_fig_button, controls]), )
-    widgets['axes_config_tabs'].set_title(n_tabs, _idx2figname(fig_idx))
+    n_tabs = len(widgets["axes_config_tabs"].children)
+    widgets["axes_config_tabs"].children = widgets["axes_config_tabs"].children + (
+        VBox([close_fig_button, controls]),
+    )
+    widgets["axes_config_tabs"].set_title(n_tabs, _idx2figname(fig_idx))
 
 
 def _add_figure(b, widgets, data, scale=0.95, dpi=96):
-    template_name = widgets['templates_dropdown'].value
-    fig_idx = data['fig_idx']['idx']
-    viz_output_layout = data['visualization_output']
+    template_name = widgets["templates_dropdown"].value
+    fig_idx = data["fig_idx"]["idx"]
+    viz_output_layout = data["visualization_output"]
     fig_outputs = Output()
-    n_tabs = len(widgets['figs_tabs'].children)
+    n_tabs = len(widgets["figs_tabs"].children)
 
     if n_tabs == 0:
-        widgets['figs_output'].clear_output()
-        with widgets['figs_output']:
-            display(widgets['figs_tabs'])
+        widgets["figs_output"].clear_output()
+        with widgets["figs_output"]:
+            display(widgets["figs_tabs"])
 
-    widgets['figs_tabs'].children = (
-        [s for s in widgets['figs_tabs'].children] + [fig_outputs]
-    )
-    widgets['figs_tabs'].set_title(n_tabs, _idx2figname(fig_idx))
+    widgets["figs_tabs"].children = [s for s in widgets["figs_tabs"].children] + [
+        fig_outputs
+    ]
+    widgets["figs_tabs"].set_title(n_tabs, _idx2figname(fig_idx))
 
     with fig_outputs:
-        figsize = (scale * ((int(viz_output_layout.width[:-2]) - 10) / dpi),
-                   scale * ((int(viz_output_layout.height[:-2]) - 10) / dpi))
-        mosaic = fig_templates[template_name]['mosaic']
+        figsize = (
+            scale * ((int(viz_output_layout.width[:-2]) - 10) / dpi),
+            scale * ((int(viz_output_layout.height[:-2]) - 10) / dpi),
+        )
+        mosaic = fig_templates[template_name]["mosaic"]
         kwargs = eval(f"dict({fig_templates[template_name]['kwargs']})")
         plt.ioff()
-        fig, axd = plt.subplot_mosaic(mosaic,
-                                      figsize=figsize,
-                                      dpi=dpi,
-                                      **kwargs)
+        fig, axd = plt.subplot_mosaic(mosaic, figsize=figsize, dpi=dpi, **kwargs)
         plt.ion()
         fig.tight_layout()
         fig.canvas.header_visible = False
         fig.canvas.footer_visible = False
 
-        if data['use_ipympl'] is False:
+        if data["use_ipympl"] is False:
             plt.show()
         else:
             display(fig.canvas)
 
     _add_axes_controls(widgets, data, fig=fig, axd=axd)
 
-    data['figs'][fig_idx] = fig
-    widgets['figs_tabs'].selected_index = n_tabs
-    data['fig_idx']['idx'] += 1
+    data["figs"][fig_idx] = fig
+    widgets["figs_tabs"].selected_index = n_tabs
+    data["fig_idx"]["idx"] += 1
 
 
 class _VizManager:
@@ -656,7 +724,7 @@ class _VizManager:
     def __init__(self, gui_data, viz_layout):
         plt.close("all")
         self.viz_layout = viz_layout
-        self.use_ipympl = 'ipympl' in matplotlib.get_backend()
+        self.use_ipympl = "ipympl" in matplotlib.get_backend()
 
         self.axes_config_output = Output()
         self.figs_output = Output()
@@ -667,22 +735,24 @@ class _VizManager:
         self.axes_config_tabs.selected_index = None
         self.figs_tabs.selected_index = None
         self.figs_config_tab_link = link(
-            (self.axes_config_tabs, 'selected_index'),
-            (self.figs_tabs, 'selected_index'),
+            (self.axes_config_tabs, "selected_index"),
+            (self.figs_tabs, "selected_index"),
         )
 
         template_names = list(fig_templates.keys())
         self.templates_dropdown = Dropdown(
-            description='Layout template:',
+            description="Layout template:",
             options=template_names,
             value=template_names[0],
-            style={'description_width': 'initial'},
-            layout=Layout(width="98%"))
+            style={"description_width": "initial"},
+            layout=Layout(width="98%"),
+        )
         self.make_fig_button = Button(
-            description='Make figure',
+            description="Make figure",
             button_style="primary",
-            style={'button_color': self.viz_layout['theme_color']},
-            layout=self.viz_layout['btn'])
+            style={"button_color": self.viz_layout["theme_color"]},
+            layout=self.viz_layout["btn"],
+        )
         self.make_fig_button.on_click(self.add_figure)
 
         # data
@@ -696,7 +766,7 @@ class _VizManager:
             "figs_output": self.figs_output,
             "axes_config_tabs": self.axes_config_tabs,
             "figs_tabs": self.figs_tabs,
-            "templates_dropdown": self.templates_dropdown
+            "templates_dropdown": self.templates_dropdown,
         }
 
     @property
@@ -706,13 +776,13 @@ class _VizManager:
             "use_ipympl": self.use_ipympl,
             "simulations": self.gui_data["simulation_data"],
             "fig_idx": self.fig_idx,
-            "visualization_output": self.viz_layout['visualization_output'],
-            "figs": self.figs
+            "visualization_output": self.viz_layout["visualization_output"],
+            "figs": self.figs,
         }
 
     def reset_fig_config_tabs(self, template_name=None):
         """Reset the figure config tabs with most recent simulation data."""
-        simulation_names = tuple(self.data['simulations'].keys())
+        simulation_names = tuple(self.data["simulations"].keys())
         for tab in self.axes_config_tabs.children:
             controls = tab.children[1]
             for ax_control in controls.children:
@@ -731,34 +801,34 @@ class _VizManager:
             display(Label(_fig_placeholder))
 
         fig_output_container = VBox(
-            [self.figs_output], layout=self.viz_layout['visualization_window'])
+            [self.figs_output], layout=self.viz_layout["visualization_window"]
+        )
 
-        config_panel = VBox([
-            Box(
-                [
-                    self.templates_dropdown,
-                    self.make_fig_button,
-                ],
-                layout=Layout(
-                    display='flex',
-                    flex_flow='column',
-                    align_items='stretch',
+        config_panel = VBox(
+            [
+                Box(
+                    [
+                        self.templates_dropdown,
+                        self.make_fig_button,
+                    ],
+                    layout=Layout(
+                        display="flex",
+                        flex_flow="column",
+                        align_items="stretch",
+                    ),
                 ),
-            ),
-            Label("Figure config:"),
-            self.axes_config_output,
-        ])
+                Label("Figure config:"),
+                self.axes_config_output,
+            ]
+        )
         return config_panel, fig_output_container
 
-    @unlink_relink(attribute='figs_config_tab_link')
+    @unlink_relink(attribute="figs_config_tab_link")
     def add_figure(self, b=None):
-        """Add a figure and corresponding config tabs to the dashboard.
-        """
-        _add_figure(None,
-                    self.widgets,
-                    self.data,
-                    scale=0.97,
-                    dpi=self.viz_layout['dpi'])
+        """Add a figure and corresponding config tabs to the dashboard."""
+        _add_figure(
+            None, self.widgets, self.data, scale=0.97, dpi=self.viz_layout["dpi"]
+        )
 
     def _simulate_add_fig(self):
         self.make_fig_button.click()
@@ -777,8 +847,15 @@ class _VizManager:
         close_button = self.axes_config_tabs.children[tab_idx].children[0]
         close_button.click()
 
-    def _simulate_edit_figure(self, fig_name, ax_name, simulation_name,
-                              plot_type, preprocessing_config, operation):
+    def _simulate_edit_figure(
+        self,
+        fig_name,
+        ax_name,
+        simulation_name,
+        plot_type,
+        preprocessing_config,
+        operation,
+    ):
         """Manipulate a certain figure.
 
         Parameters
@@ -799,7 +876,7 @@ class _VizManager:
                 `"plot"` if you want to plot and `"clear"` if you want to
                 remove previously plotted visualizations.
         """
-        assert simulation_name in self.data['simulations'].keys()
+        assert simulation_name in self.data["simulations"].keys()
         assert plot_type in _plot_types
         assert operation in ("plot", "clear")
 
