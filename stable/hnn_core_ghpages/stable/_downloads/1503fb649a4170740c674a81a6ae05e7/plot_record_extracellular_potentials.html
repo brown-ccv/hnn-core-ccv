@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>02. Record extracellular potentials &#8212; hnn-core  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/bootstrap-sphinx.css?v=9afac83c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=61a4c737" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/nbsphinx-code-cells.css" />
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-199741045-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-199741045-1');
+</script>
+
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html">
+          hnn-core</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4.dev0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../../auto_examples/index.html">Examples</a></li>
+                <li><a href="../../../../gui/index.html">GUI</a></li>
+                <li><a href="../../../../api.html">API</a></li>
+                <li><a href="../../../../glossary.html">Glossary</a></li>
+                <li><a href="../../../../whats_new.html">What's new</a></li>
+                <li><a href="https://github.com/jonescompneurolab/hnn-core">GitHub</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">02. Record extracellular potentials</a><ul>
+<li><a class="reference internal" href="#References">References</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../../../_sources/hnn_core_ghpages/stable/_downloads/1503fb649a4170740c674a81a6ae05e7/plot_record_extracellular_potentials.ipynb.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+<div class="navbar-form navbar-right navbar-btn dropdown btn-group-sm" style="margin-left: 20px; margin-top: 5px; margin-bottom: 5px">
+  <button type="button" class="btn btn-primary navbar-btn dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown">
+    v0.4.dev0
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+    <li><a href="https://jonescompneurolab.github.io/hnn-core/dev/index.html">Development</a></li>
+    <li><a href="https://jonescompneurolab.github.io/hnn-core/stable/index.html">Stable</a></li>
+    <li><a href="https://jonescompneurolab.github.io/hnn-core/v0.1/index.html">v0.1</a></li>
+    <li><a href="https://jonescompneurolab.github.io/hnn-core/v0.2/index.html">v0.2</a></li>
+    <li><a href="https://jonescompneurolab.github.io/hnn-core/v0.3/index.html">v0.3</a></li>
+  </ul>
+</div>
+
+
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">02. Record extracellular potentials</a><ul>
+<li><a class="reference internal" href="#References">References</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="sourcelink">
+  <a href="../../../../_sources/hnn_core_ghpages/stable/_downloads/1503fb649a4170740c674a81a6ae05e7/plot_record_extracellular_potentials.ipynb.txt"
+     rel="nofollow">Source</a>
+</div>
+<form action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <style>
+    .body {
+        max-width: 100% !important;
+    }
+    .nbinput.container {
+        padding-top: 5px;
+        display: none !important;
+    }
+    div.nboutput.container div.prompt {
+        display: none !important;
+    }
+    div.nboutput.container div.output_area.stderr {
+        display: none !important;
+    }
+</style><div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<section id="02.-Record-extracellular-potentials">
+<h1>02. Record extracellular potentials<a class="headerlink" href="#02.-Record-extracellular-potentials" title="Link to this heading">¶</a></h1>
+<p>The main output of HNN simulations is the ‘dipole’ waveform, i.e., the net intracellular current flowing in pyramidal cell apical dendrites. At the large distances between cells and M/EEG sensors, this ‘primary’ current is the main contributor to the measured fields. Close to the cells, the local field potential (LFP) is the result of intracellular current leaking into the extracellular medium through active and passive membrane channels. Under some simplifying assumptions, we may approximate
+the LFP at virtual electrodes placed in and around the HNN network model.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authors: Christopher Bailey &lt;cjb@cfin.au.dk&gt;</span>
+<span class="c1">#          Mainak Jas &lt;mainakjas@gmail.com&gt;</span>
+<span class="c1">#          Nick Tolley &lt;nicholas_tolley@brown.edu&gt;</span>
+
+<span class="c1"># sphinx_gallery_thumbnail_number = 3</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">hnn_core</span> <span class="kn">import</span> <span class="n">jones_2009_model</span><span class="p">,</span> <span class="n">simulate_dipole</span>
+<span class="kn">from</span> <span class="nn">hnn_core.network_models</span> <span class="kn">import</span> <span class="n">add_erp_drives_to_jones_model</span>
+</pre></div>
+</div>
+</div>
+<p>The default network model defined in Jones et al. (2009) [1]_ consists of a square grid of pyramidal cells. The in-plane distance between pyramidal cell somas on the grid can be set by the user, which will have an influence on the extracellular potentials (but not on the calculated net intracellular dipole moment). In this example, we’ll simulate a network of model cells spaced 30 um apart. To drive the network dynamics, we’ll use three evoked ‘ERP’ drives; see the event-related potential (ERP)
+example for details.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">jones_2009_model</span><span class="p">()</span>
+<span class="n">add_erp_drives_to_jones_model</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+
+<span class="n">net</span><span class="o">.</span><span class="n">set_cell_positions</span><span class="p">(</span><span class="n">inplane_distance</span><span class="o">=</span><span class="mf">30.</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Extracellular recordings require specifying the electrode postions. It can be useful to visualize the cells of the network to decide on the placement of each electrode.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net</span><span class="o">.</span><span class="n">plot_cells</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>The default network consists of 2 layers (L2 and L5), within which the cell somas are arranged in a regular grid, and apical dendrites are aligned along the z-axis. We can simulate a linear multielectrode array with 100 um intercontact spacing [2]_ by specifying a list of (x, y, z) coordinate triplets. The L5 pyramidal cell somas are at z=0 um, with apical dendrites extending up to z~2000 um. L2 pyramidal cell somas reside at z~1300 um, and have apical dendrites extending to z~2300 um. We’ll
+place the recording array in the center of the network. By default, a value of 0.3 S/m is used for the constant extracellular conductivity and the ‘point source approximation’ for calculations; see :meth:<code class="docutils literal notranslate"><span class="pre">hnn_core.Network.add_electrode_array</span></code> for details.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">depths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">325</span><span class="p">,</span> <span class="mi">2150</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+<span class="n">electrode_pos</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">135</span><span class="p">,</span> <span class="mi">135</span><span class="p">,</span> <span class="n">dep</span><span class="p">)</span> <span class="k">for</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">depths</span><span class="p">]</span>
+<span class="n">net</span><span class="o">.</span><span class="n">add_electrode_array</span><span class="p">(</span><span class="s1">&#39;shank1&#39;</span><span class="p">,</span> <span class="n">electrode_pos</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The electrode arrays are stored under <code class="docutils literal notranslate"><span class="pre">Network.rec_arrays</span></code> as a dictionary of :class:<code class="docutils literal notranslate"><span class="pre">hnn_core.extracellular.ElectrodeArray</span></code> objects that are now attached to the network and will be recorded during the simulation. Note that calculating the extracellular potentials requires additional computational resources and will thus slightly slow down the simulation. <code class="docutils literal notranslate"><span class="pre">Using</span> <span class="pre">MPI</span> <span class="pre">&lt;sphx_glr_auto_examples_plot_simulate_mpi_backend.py&gt;</span></code> will speed up computation considerably.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">rec_arrays</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">plot_cells</span><span class="p">()</span>
+
+<span class="n">dpl</span> <span class="o">=</span> <span class="n">simulate_dipole</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">tstop</span><span class="o">=</span><span class="mi">170</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>For plotting both aggregate dipole moment and LFP traces, we’ll use a 10 ms smoothing window, after which both data can be decimated by a factor of 20 from 40 to 2 kHz sampling rates (note that decimation is applied in two steps). Decimation speeds up plotting significantly.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">trial_idx</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">window_len</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># ms</span>
+<span class="n">decimate</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>  <span class="c1"># from 40k to 8k to 2k</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                        <span class="n">gridspec_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;height_ratios&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+
+<span class="c1"># Then plot the aggregate dipole time series on its own axis</span>
+<span class="n">dpl</span><span class="p">[</span><span class="n">trial_idx</span><span class="p">]</span><span class="o">.</span><span class="n">smooth</span><span class="p">(</span><span class="n">window_len</span><span class="o">=</span><span class="n">window_len</span><span class="p">)</span>
+<span class="n">dpl</span><span class="p">[</span><span class="n">trial_idx</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">decim</span><span class="o">=</span><span class="n">decimate</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># use the same smoothing window on the LFP traces to allow comparison to dipole</span>
+<span class="n">net</span><span class="o">.</span><span class="n">rec_arrays</span><span class="p">[</span><span class="s1">&#39;shank1&#39;</span><span class="p">][</span><span class="n">trial_idx</span><span class="p">]</span><span class="o">.</span><span class="n">smooth</span><span class="p">(</span><span class="n">window_len</span><span class="o">=</span><span class="n">window_len</span><span class="p">)</span><span class="o">.</span><span class="n">plot_lfp</span><span class="p">(</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">decim</span><span class="o">=</span><span class="n">decimate</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="c1"># Add spike raster to subplot</span>
+<span class="n">net</span><span class="o">.</span><span class="n">cell_response</span><span class="o">.</span><span class="n">plot_spikes_raster</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Finally, add the CSD to the bottom subplot</span>
+<span class="n">net</span><span class="o">.</span><span class="n">rec_arrays</span><span class="p">[</span><span class="s1">&#39;shank1&#39;</span><span class="p">][</span><span class="n">trial_idx</span><span class="p">]</span><span class="o">.</span><span class="n">smooth</span><span class="p">(</span><span class="n">window_len</span><span class="o">=</span><span class="n">window_len</span><span class="p">)</span><span class="o">.</span><span class="n">plot_csd</span><span class="p">(</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<section id="References">
+<h2>References<a class="headerlink" href="#References" title="Link to this heading">¶</a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Jones, S. R. et al. Quantitative analysis and biophysically realistic neural modeling of the MEG mu rhythm: rhythmogenesis and modulation of sensory-evoked responses. J. Neurophysiol. 102, 3554–3572 (2009). .. [2] Kajikawa, Y. &amp; Schroeder, C. E. How local is the local field potential? Neuron 72, 847–858 (2011).</p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2023, HNN Developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

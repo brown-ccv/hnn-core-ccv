@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>05. Simulate beta modulated ERP &#8212; hnn-core  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/bootstrap-sphinx.css?v=9afac83c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=61a4c737" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/nbsphinx-code-cells.css" />
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-199741045-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-199741045-1');
+</script>
+
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html">
+          hnn-core</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4.dev0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../../auto_examples/index.html">Examples</a></li>
+                <li><a href="../../../../gui/index.html">GUI</a></li>
+                <li><a href="../../../../api.html">API</a></li>
+                <li><a href="../../../../glossary.html">Glossary</a></li>
+                <li><a href="../../../../whats_new.html">What's new</a></li>
+                <li><a href="https://github.com/jonescompneurolab/hnn-core">GitHub</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"></ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">05. Simulate beta modulated ERP</a><ul>
+<li><a class="reference internal" href="#References">References</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../../../_sources/hnn_core_ghpages/v0.2/_downloads/0fd653b58bb82a761560d19cc4428cb2/plot_simulate_beta.ipynb.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+<div class="navbar-form navbar-right navbar-btn dropdown btn-group-sm" style="margin-left: 20px; margin-top: 5px; margin-bottom: 5px">
+  <button type="button" class="btn btn-primary navbar-btn dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown">
+    v0.4.dev0
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+    <li><a href="https://jonescompneurolab.github.io/hnn-core/dev/index.html">Development</a></li>
+    <li><a href="https://jonescompneurolab.github.io/hnn-core/stable/index.html">Stable</a></li>
+    <li><a href="https://jonescompneurolab.github.io/hnn-core/v0.1/index.html">v0.1</a></li>
+    <li><a href="https://jonescompneurolab.github.io/hnn-core/v0.2/index.html">v0.2</a></li>
+    <li><a href="https://jonescompneurolab.github.io/hnn-core/v0.3/index.html">v0.3</a></li>
+  </ul>
+</div>
+
+
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li><a class="reference internal" href="#">05. Simulate beta modulated ERP</a><ul>
+<li><a class="reference internal" href="#References">References</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="sourcelink">
+  <a href="../../../../_sources/hnn_core_ghpages/v0.2/_downloads/0fd653b58bb82a761560d19cc4428cb2/plot_simulate_beta.ipynb.txt"
+     rel="nofollow">Source</a>
+</div>
+<form action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <style>
+    .body {
+        max-width: 100% !important;
+    }
+    .nbinput.container {
+        padding-top: 5px;
+        display: none !important;
+    }
+    div.nboutput.container div.prompt {
+        display: none !important;
+    }
+    div.nboutput.container div.output_area.stderr {
+        display: none !important;
+    }
+</style><div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<section id="05.-Simulate-beta-modulated-ERP">
+<h1>05. Simulate beta modulated ERP<a class="headerlink" href="#05.-Simulate-beta-modulated-ERP" title="Link to this heading">¶</a></h1>
+<p>This example demonstrates how event related potentials (ERP) are modulated by prestimulus beta events. Specifically, this example reproduces Figure 5 from Law et al. 2021 [1]_. To be consistent with the publication, the default network connectivity is altered. These modfications demonstrate a potential mechanism by which transient beta activity in the neocortex can suppress the perceptibility of sensory input. This suppression depends on the timing of the beta event, and the incoming sensory
+information.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authors: Nick Tolley &lt;nicholas_tolley@brown.edu&gt;</span>
+
+<span class="kn">from</span> <span class="nn">hnn_core</span> <span class="kn">import</span> <span class="n">simulate_dipole</span><span class="p">,</span> <span class="n">law_2021_model</span><span class="p">,</span> <span class="n">jones_2009_model</span>
+<span class="kn">from</span> <span class="nn">hnn_core.viz</span> <span class="kn">import</span> <span class="n">plot_dipole</span>
+</pre></div>
+</div>
+</div>
+<p>We begin by instantiating the network model from Law et al. 2021 [1]_.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">law_2021_model</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>The Law 2021 model is based on the network model described in Jones et al. 2009 [2]_ with several important modifications. One of the most significant changes is substantially increasing the rise and fall time constants of GABAb-conductances on L2 and L5 pyramidal. Another important change is the removal of calcium channels from basal dendrites and soma of L5 pyramidal cells specifically. We can inspect these properties with the <code class="docutils literal notranslate"><span class="pre">net.cell_types</span></code> attribute which contains information on the
+biophysics and geometry of each cell.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_jones</span> <span class="o">=</span> <span class="n">jones_2009_model</span><span class="p">()</span>
+
+<span class="n">jones_rise</span> <span class="o">=</span> <span class="n">net_jones</span><span class="o">.</span><span class="n">cell_types</span><span class="p">[</span><span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">synapses</span><span class="p">[</span><span class="s1">&#39;gabab&#39;</span><span class="p">][</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span>
+<span class="n">law_rise</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">cell_types</span><span class="p">[</span><span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">synapses</span><span class="p">[</span><span class="s1">&#39;gabab&#39;</span><span class="p">][</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;GABAb Rise (ms): </span><span class="si">{</span><span class="n">jones_rise</span><span class="si">}</span><span class="s1"> -&gt; </span><span class="si">{</span><span class="n">law_rise</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">jones_fall</span> <span class="o">=</span> <span class="n">net_jones</span><span class="o">.</span><span class="n">cell_types</span><span class="p">[</span><span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">synapses</span><span class="p">[</span><span class="s1">&#39;gabab&#39;</span><span class="p">][</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span>
+<span class="n">law_fall</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">cell_types</span><span class="p">[</span><span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">synapses</span><span class="p">[</span><span class="s1">&#39;gabab&#39;</span><span class="p">][</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;GABAb Fall (ms): </span><span class="si">{</span><span class="n">jones_fall</span><span class="si">}</span><span class="s1"> -&gt; </span><span class="si">{</span><span class="n">law_fall</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Apical Dendrite Channels:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">cell_types</span><span class="p">[</span><span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sections</span><span class="p">[</span><span class="s1">&#39;apical_1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mechs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Basal Dendrite Channels (&#39;ca&#39; missing):&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">cell_types</span><span class="p">[</span><span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sections</span><span class="p">[</span><span class="s1">&#39;basal_1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mechs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<p>A major change to the Jones 2009 model is the addition of a Martinotti-like recurrent tuft connection [3]_. This new connection originates from L5 basket cells, and provides GABAa inhibition on the distal dendrites of L5 pyramidal cells.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Recurrent Tuft Connection&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">connectivity</span><span class="p">[</span><span class="mi">16</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<p>The remaining changes to the connectivity was the removal of an L2_basket -&gt; L5_pyramidal GABAa connection, and replacing it with GABAb.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;New GABAb connection&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">connectivity</span><span class="p">[</span><span class="mi">15</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Connection Removed from Law Model&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">net_jones</span><span class="o">.</span><span class="n">connectivity</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<p>To demonstrate sensory depression, we will add the drives necessary to generate and ERP similar to <code class="docutils literal notranslate"><span class="pre">evoked</span> <span class="pre">example</span> <span class="pre">&lt;sphx_glr_auto_examples_plot_simulate_evoked.py&gt;</span></code>, but modified to reflect the parameters used in Law et al. 2021. Specifically, we are considering the case where a tactile stimulus is delivered at 150 ms. 25 ms later, the first input to sensory cortex arrives as a proximal drive to the cortical column. Proximal drive corresponds to projections from the direct thalamic nuclei.
+This is followed by one :term:<code class="docutils literal notranslate"><span class="pre">distal</span></code> drive representing projections from indirect thalamic nuclei, and a final late proximal drive. It is important to note that the parameter values for each are different from previous examples of the evoked response. This reflects the altered network dynamics due to the changes described above.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_erp_drives</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">stimulus_start</span><span class="p">):</span>
+    <span class="c1"># Distal evoked drive</span>
+    <span class="n">weights_ampa_d1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L2_basket&#39;</span><span class="p">:</span> <span class="mf">0.0005</span><span class="p">,</span> <span class="s1">&#39;L2_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.004</span><span class="p">,</span>
+                       <span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.0005</span><span class="p">}</span>
+    <span class="n">weights_nmda_d1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L2_basket&#39;</span><span class="p">:</span> <span class="mf">0.0005</span><span class="p">,</span> <span class="s1">&#39;L2_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.004</span><span class="p">,</span>
+                       <span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.0005</span><span class="p">}</span>
+    <span class="n">syn_delays_d1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L2_basket&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s1">&#39;L2_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                     <span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">}</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">add_evoked_drive</span><span class="p">(</span>
+        <span class="s1">&#39;evdist1&#39;</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mf">70.0</span> <span class="o">+</span> <span class="n">stimulus_start</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">numspikes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">weights_ampa</span><span class="o">=</span><span class="n">weights_ampa_d1</span><span class="p">,</span> <span class="n">weights_nmda</span><span class="o">=</span><span class="n">weights_nmda_d1</span><span class="p">,</span>
+        <span class="n">location</span><span class="o">=</span><span class="s1">&#39;distal&#39;</span><span class="p">,</span> <span class="n">synaptic_delays</span><span class="o">=</span><span class="n">syn_delays_d1</span><span class="p">,</span> <span class="n">event_seed</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+    <span class="c1"># Two proximal drives</span>
+    <span class="n">weights_ampa_p1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L2_basket&#39;</span><span class="p">:</span> <span class="mf">0.002</span><span class="p">,</span> <span class="s1">&#39;L2_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.0011</span><span class="p">,</span>
+                       <span class="s1">&#39;L5_basket&#39;</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">,</span> <span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">}</span>
+    <span class="n">syn_delays_prox</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L2_basket&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s1">&#39;L2_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                       <span class="s1">&#39;L5_basket&#39;</span><span class="p">:</span> <span class="mf">1.</span><span class="p">,</span> <span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">:</span> <span class="mf">1.</span><span class="p">}</span>
+
+    <span class="c1"># all NMDA weights are zero; pass None explicitly</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">add_evoked_drive</span><span class="p">(</span>
+        <span class="s1">&#39;evprox1&#39;</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mf">25.0</span> <span class="o">+</span> <span class="n">stimulus_start</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">numspikes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">weights_ampa</span><span class="o">=</span><span class="n">weights_ampa_p1</span><span class="p">,</span> <span class="n">weights_nmda</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">location</span><span class="o">=</span><span class="s1">&#39;proximal&#39;</span><span class="p">,</span> <span class="n">synaptic_delays</span><span class="o">=</span><span class="n">syn_delays_prox</span><span class="p">,</span> <span class="n">event_seed</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+    <span class="c1"># Second proximal evoked drive. NB: only AMPA weights differ from first</span>
+    <span class="n">weights_ampa_p2</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L2_basket&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span> <span class="s1">&#39;L2_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span>
+                       <span class="s1">&#39;L5_basket&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">}</span>
+    <span class="c1"># all NMDA weights are zero; omit weights_nmda (defaults to None)</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">add_evoked_drive</span><span class="p">(</span>
+        <span class="s1">&#39;evprox2&#39;</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mf">135.0</span> <span class="o">+</span> <span class="n">stimulus_start</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">numspikes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">weights_ampa</span><span class="o">=</span><span class="n">weights_ampa_p2</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;proximal&#39;</span><span class="p">,</span>
+        <span class="n">synaptic_delays</span><span class="o">=</span><span class="n">syn_delays_prox</span><span class="p">,</span> <span class="n">event_seed</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">net</span>
+</pre></div>
+</div>
+</div>
+<p>A beta event is created by inducing simultaneous proximal and distal drives. The input is just strong enough to evoke spiking in the L2 basket cells. This spiking causes GABAb mediated inhibition of the network, and ultimately suppressed sensory detection.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_beta_drives</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">beta_start</span><span class="p">):</span>
+    <span class="c1"># Distal Drive</span>
+    <span class="n">weights_ampa_d1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L2_basket&#39;</span><span class="p">:</span> <span class="mf">0.00032</span><span class="p">,</span> <span class="s1">&#39;L2_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.00008</span><span class="p">,</span>
+                       <span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.00004</span><span class="p">}</span>
+    <span class="n">syn_delays_d1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L2_basket&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;L2_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+                     <span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">}</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">add_bursty_drive</span><span class="p">(</span>
+        <span class="s1">&#39;beta_dist&#39;</span><span class="p">,</span> <span class="n">tstart</span><span class="o">=</span><span class="n">beta_start</span><span class="p">,</span> <span class="n">tstart_std</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">tstop</span><span class="o">=</span><span class="n">beta_start</span> <span class="o">+</span> <span class="mf">50.</span><span class="p">,</span>
+        <span class="n">burst_rate</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">burst_std</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">numspikes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">spike_isi</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">n_drive_cells</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;distal&#39;</span><span class="p">,</span> <span class="n">weights_ampa</span><span class="o">=</span><span class="n">weights_ampa_d1</span><span class="p">,</span>
+        <span class="n">synaptic_delays</span><span class="o">=</span><span class="n">syn_delays_d1</span><span class="p">,</span> <span class="n">event_seed</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+    <span class="c1"># Proximal Drive</span>
+    <span class="n">weights_ampa_p1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L2_basket&#39;</span><span class="p">:</span> <span class="mf">0.00004</span><span class="p">,</span> <span class="s1">&#39;L2_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.00002</span><span class="p">,</span>
+                       <span class="s1">&#39;L5_basket&#39;</span><span class="p">:</span> <span class="mf">0.00002</span><span class="p">,</span> <span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.00002</span><span class="p">}</span>
+    <span class="n">syn_delays_p1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;L2_basket&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s1">&#39;L2_pyramidal&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                     <span class="s1">&#39;L5_basket&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;L5_pyramidal&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+
+    <span class="n">net</span><span class="o">.</span><span class="n">add_bursty_drive</span><span class="p">(</span>
+        <span class="s1">&#39;beta_prox&#39;</span><span class="p">,</span> <span class="n">tstart</span><span class="o">=</span><span class="n">beta_start</span><span class="p">,</span> <span class="n">tstart_std</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">tstop</span><span class="o">=</span><span class="n">beta_start</span> <span class="o">+</span> <span class="mf">50.</span><span class="p">,</span>
+        <span class="n">burst_rate</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">burst_std</span><span class="o">=</span><span class="mf">20.</span><span class="p">,</span> <span class="n">numspikes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">spike_isi</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">n_drive_cells</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;proximal&#39;</span><span class="p">,</span> <span class="n">weights_ampa</span><span class="o">=</span><span class="n">weights_ampa_p1</span><span class="p">,</span>
+        <span class="n">synaptic_delays</span><span class="o">=</span><span class="n">syn_delays_p1</span><span class="p">,</span> <span class="n">event_seed</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">net</span>
+</pre></div>
+</div>
+</div>
+<p>We can now use our functions to create three distinct simulations: 1) beta event only, 2) ERP only, and 3) beta event + ERP.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">beta_start</span><span class="p">,</span> <span class="n">stimulus_start</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">,</span> <span class="mf">125.0</span>
+<span class="n">net_beta</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">net_beta</span> <span class="o">=</span> <span class="n">add_beta_drives</span><span class="p">(</span><span class="n">net_beta</span><span class="p">,</span> <span class="n">beta_start</span><span class="p">)</span>
+
+<span class="n">net_erp</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">net_erp</span> <span class="o">=</span> <span class="n">add_erp_drives</span><span class="p">(</span><span class="n">net_erp</span><span class="p">,</span> <span class="n">stimulus_start</span><span class="p">)</span>
+
+<span class="n">net_beta_erp</span> <span class="o">=</span> <span class="n">net_beta</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">net_beta_erp</span> <span class="o">=</span> <span class="n">add_erp_drives</span><span class="p">(</span><span class="n">net_beta_erp</span><span class="p">,</span> <span class="n">stimulus_start</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>And finally we simulate. Note that the default simulation time has been increased to 400 ms to observe the long time course over which beta events can influence sensory input to the cortical column.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dpls_beta</span> <span class="o">=</span> <span class="n">simulate_dipole</span><span class="p">(</span><span class="n">net_beta</span><span class="p">,</span> <span class="n">tstop</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<span class="n">dpls_erp</span> <span class="o">=</span> <span class="n">simulate_dipole</span><span class="p">(</span><span class="n">net_erp</span><span class="p">,</span> <span class="n">tstop</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<span class="n">dpls_beta_erp</span> <span class="o">=</span> <span class="n">simulate_dipole</span><span class="p">(</span><span class="n">net_beta_erp</span><span class="p">,</span> <span class="n">tstop</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>By inspecting the activity during the beta event, we can see that spiking occurs exclusively at 50 ms, the peak of the gaussian distributed proximal and distal inputs. This spiking activity leads to sustained GABAb mediated inhibition of the L2 and L5 pyrmaidal cells. One effect of this inhibition is an assymetric beta event with a long positive tail.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+                         <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">net_beta</span><span class="o">.</span><span class="n">cell_response</span><span class="o">.</span><span class="n">plot_spikes_hist</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Beta Event Generation&#39;</span><span class="p">)</span>
+<span class="n">plot_dipole</span><span class="p">(</span><span class="n">dpls_beta</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">layer</span><span class="o">=</span><span class="s1">&#39;agg&#39;</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">net_beta</span><span class="o">.</span><span class="n">cell_response</span><span class="o">.</span><span class="n">plot_spikes_raster</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Spike Raster&#39;</span><span class="p">)</span>
+
+<span class="c1"># Create a fixed-step tiling of frequencies from 1 to 40 Hz in steps of 1 Hz</span>
+<span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="mf">60.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="n">dpls_beta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot_tfr_morlet</span><span class="p">(</span><span class="n">freqs</span><span class="p">,</span> <span class="n">n_cycles</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<p>Next we will inspect what happens when a sensory stimulus is delivered 75 ms after a beta event. Note that the delay time for a tactile stimulus at the hand to arrive at the cortex is roughly 25 ms, which means the first proximal input to the cortical column occurs ~100 ms after the beta event.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dpls_beta_erp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">smooth</span><span class="p">(</span><span class="mi">45</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+                         <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plot_dipole</span><span class="p">(</span><span class="n">dpls_beta_erp</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">layer</span><span class="o">=</span><span class="s1">&#39;agg&#39;</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Beta Event + ERP&#39;</span><span class="p">)</span>
+<span class="n">net_beta_erp</span><span class="o">.</span><span class="n">cell_response</span><span class="o">.</span><span class="n">plot_spikes_hist</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Input Drives Histogram&#39;</span><span class="p">)</span>
+<span class="n">net_beta_erp</span><span class="o">.</span><span class="n">cell_response</span><span class="o">.</span><span class="n">plot_spikes_raster</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Spike Raster&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>To help understand the effect of beta mediated inhibition on the response to incoming sensory stimuli, we can compare the ERP and spiking activity due to sensory input with and without a beta event. The sustained inhibition of the network ultimately depresses the sensory response which is associated with a reduced ERP amplitude</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dpls_erp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">smooth</span><span class="p">(</span><span class="mi">45</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+                         <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plot_dipole</span><span class="p">(</span><span class="n">dpls_beta_erp</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">layer</span><span class="o">=</span><span class="s1">&#39;agg&#39;</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">plot_dipole</span><span class="p">(</span><span class="n">dpls_erp</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">layer</span><span class="o">=</span><span class="s1">&#39;agg&#39;</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Beta ERP Comparison&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;ERP + Beta&#39;</span><span class="p">,</span> <span class="s1">&#39;ERP&#39;</span><span class="p">])</span>
+<span class="n">net_beta_erp</span><span class="o">.</span><span class="n">cell_response</span><span class="o">.</span><span class="n">plot_spikes_raster</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Beta + ERP Spike Raster&#39;</span><span class="p">)</span>
+<span class="n">net_erp</span><span class="o">.</span><span class="n">cell_response</span><span class="o">.</span><span class="n">plot_spikes_raster</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;ERP Spike Raster&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<section id="References">
+<h2>References<a class="headerlink" href="#References" title="Link to this heading">¶</a></h2>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Law, R. G., Pugliese, S., Shin, H., Sliva, D. D., Lee, S., Neymotin, S., Moore, C., &amp; Jones, S. R. (2021). Thalamocortical mechanisms regulating the relationship between transient beta events and human tactile perception. BioRxiv, 2021.04.16.440210. <a class="reference external" href="https://doi.org/10.1101/2021.04.16.440210">https://doi.org/10.1101/2021.04.16.440210</a> .. [2] Jones, S. R., Pritchett, D. L., Sikora, M. A., Stufflebeam, S. M., Hämäläinen, M., &amp; Moore, C. I. (2009). Quantitative Analysis and Biophysically Realistic Neural Modeling of the MEG Mu Rhythm:</p>
+</aside>
+</aside>
+<p>Rhythmogenesis and Modulation of Sensory-Evoked Responses. Journal of Neurophysiology, 102(6), 3554–3572. <a class="reference external" href="https://doi.org/10.1152/jn.00535.2009">https://doi.org/10.1152/jn.00535.2009</a> .. [3] Silberberg, G., &amp; Markram, H. (2007). Disynaptic Inhibition between Neocortical Pyramidal Cells Mediated by Martinotti Cells. Neuron, 53(5), 735–746. <a class="reference external" href="https://doi.org/10.1016/j.neuron.2007.02.012">https://doi.org/10.1016/j.neuron.2007.02.012</a></p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2023, HNN Developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
