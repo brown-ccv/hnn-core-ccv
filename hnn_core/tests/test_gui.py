@@ -1157,4 +1157,3 @@ def test_adjust_synaptic_weights(setup_gui):
 
     gains_altered = _single_simulation['net'].get_synaptic_gains()
     assert gains_altered == {'e_e': 0.5, 'e_i': 0.5, 'i_e': 1.1, 'i_i': 1.1}
-
