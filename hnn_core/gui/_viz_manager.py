@@ -154,14 +154,14 @@ data_templates = {
 
 
 def check_sim_plot_types(new_sim_name, plot_type_selection, target_selection, data):
-    if not data_store.run_simulations[new_sim_name]:
+    if new_sim_name in data_store.loaded_data_names:
         plot_type_selection.options = [
             pt for pt in _plot_types if pt not in _ext_data_disabled_plot_types
         ]
     else:
         plot_type_selection.options = _plot_types
     # deal with target data
-    all_possible_targets = list(data_store.run_simulation_names)
+    all_possible_targets = list(data_store.all_simulation_names)
     all_possible_targets.remove(new_sim_name)
     target_selection.options = all_possible_targets + ["None"]
     target_selection.value = "None"
@@ -580,7 +580,11 @@ def _plot_on_axes(
     # freeze plot type
     widgets_plot_type.disabled = True
 
-    single_simulation = data_store.run_simulations[sim_name]
+    ## It must look up both run_data and laoded_data dicts for sim_name
+    ## Maybe throw exception if there's no simulation?
+    single_simulation = ( 
+        data_store.run_simulations.get(sim_name) 
+        or data_store.loaded_data.get(sim_name))
     simulation_plot_config = {
         "dipole_scaling": dipole_scaling.value,
         "dipole_smooth": dipole_smooth.value,
@@ -724,10 +728,10 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     default_scaling = fig_default_params["default_scaling"]
     default_min_frequency = fig_default_params["default_min_frequency"]
     default_max_frequency = fig_default_params["default_max_frequency"]
-  
+    last_loaded_data = simulation_names[-1]
     simulation_selection = Dropdown(
         options=simulation_names,
-        value=simulation_names[-1], ## Hopefully this works
+        value= last_loaded_data, ## Hopefully this works
         description="Simulation Data:",
         disabled=False,
         layout=layout,

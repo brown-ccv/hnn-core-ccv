@@ -4671,6 +4671,7 @@ def on_upload_data_change(change, loaded_simulations, viz_manager, log_out):
     ext_content = codecs.decode(ext_content, encoding="utf-8")
     with log_out:
         # Write loaded data to data object
+        print(len(data_store.run_simulations))
         loaded_simulations[data_filename] = {
             "net": None,
             "dpls": [_read_dipole_txt(io.StringIO(ext_content), file_extension)],
