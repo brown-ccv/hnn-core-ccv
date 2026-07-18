@@ -424,7 +424,7 @@ def test_gui_rerun_saved_network_without_n_trials():
     gui.run_button.click()
 
     sim_name = gui.widget_simulation_name.value
-    net = gui.simulation_data[sim_name]["net"]
+    net = gui._simulation_store[sim_name]["net"]
 
     cfg_path = Path("saved_network.json")
     net.write_configuration(cfg_path)
@@ -444,25 +444,25 @@ def test_gui_upload_data():
     _ = gui.compose()
 
     assert len(gui.viz_manager.data["figs"]) == 0
-    assert len(gui.data["simulation_data"]) == 0
+    assert len(gui.run_simulations["simulation_data"]) == 0
 
     file1_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/S1_SupraT.txt"  # noqa
     file2_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/yes_trial_S1_ERP_all_avg.txt"  # noqa
     gui._simulate_upload_data(file1_url)
 
-    assert len(gui.data["simulation_data"]) == 1
-    assert "S1_SupraT" in gui.data["simulation_data"].keys()
-    assert gui.data["simulation_data"]["S1_SupraT"]["net"] is None
-    assert type(gui.data["simulation_data"]["S1_SupraT"]["dpls"]) is list
+    assert len(gui.run_simulations["simulation_data"]) == 1
+    assert "S1_SupraT" in gui.run_simulations["simulation_data"].keys()
+    assert gui.run_simulations["simulation_data"]["S1_SupraT"]["net"] is None
+    assert type(gui.run_simulations["simulation_data"]["S1_SupraT"]["dpls"]) is list
     assert len(gui.viz_manager.data["figs"]) == 1
     # support uploading multiple external data.
     gui._simulate_upload_data(file2_url)
-    assert len(gui.data["simulation_data"]) == 2
+    assert len(gui.run_simulations["simulation_data"]) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
     # make sure no repeated uploading for the same name.
     gui._simulate_upload_data(file1_url)
-    assert len(gui.data["simulation_data"]) == 2
+    assert len(gui.run_simulations["simulation_data"]) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
     # No data loading for legacy multi-trial data files.
@@ -471,7 +471,7 @@ def test_gui_upload_data():
         ValueError, match="Data are supposed to have 2 or 4 columns while we have 101."
     ):
         gui._simulate_upload_data(file3_url)
-    assert len(gui.data["simulation_data"]) == 2
+    assert len(gui.run_simulations["simulation_data"]) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
     plt.close("all")
@@ -594,8 +594,8 @@ def test_gui_run_simulation_mpi():
     gui.run_button.click()
 
     default_name = gui.widget_simulation_name.value
-    dpls = gui.simulation_data[default_name]["dpls"]
-    assert isinstance(gui.simulation_data[default_name]["net"], Network)
+    dpls = gui._simulation_store[default_name]["dpls"]
+    assert isinstance(gui._simulation_store[default_name]["net"], Network)
     assert isinstance(dpls, list)
     assert len(dpls) > 0
     assert all([isinstance(dpl, Dipole) for dpl in dpls])
@@ -1827,7 +1827,7 @@ def test_diff_gui_vs_api_networks_simulations():
     sim_name = "test_gains_gui"
     gui.widget_simulation_name.value = sim_name
     gui.run_button.click()
-    dpls_gui = gui.simulation_data[sim_name]["dpls"]
+    dpls_gui = gui._simulation_store[sim_name]["dpls"]
 
     # Setup and run the API simulation
     # --------------------------------

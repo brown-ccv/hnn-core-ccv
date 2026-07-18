@@ -14,7 +14,6 @@ import textwrap
 import urllib.parse
 import urllib.request
 import zipfile
-from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
 from functools import partial
@@ -52,6 +51,8 @@ from hnn_core import JoblibBackend, MPIBackend, simulate_dipole
 from hnn_core.cells_default import _exp_g_at_dist
 from hnn_core.dipole import _read_dipole_txt, average_dipoles
 from hnn_core.gui._logging import logger
+from hnn_core.gui._data_store import data_store
+from hnn_core.gui._gui_utils import clear_empty_trash_simualtions
 from hnn_core.gui._viz_manager import _idx2figname, _VizManager
 from hnn_core.hnn_io import dict_to_network, write_network_configuration
 from hnn_core.network import pick_connection, _check_global_synaptic_gains_uniformity
@@ -64,6 +65,7 @@ from hnn_core.parallel_backends import (
 from hnn_core.params_default import get_L2Pyr_params_default, get_L5Pyr_params_default
 
 from ..externals.mne import _validate_type
+
 
 hnn_core_root = Path(hnn_core.__file__).parent
 default_network_configuration = hnn_core_root / "param" / "neymotin2020_base.json"
@@ -711,7 +713,10 @@ class HNNGUI:
         )
 
         # In-memory storage of all simulation and visualization related data
-        self.simulation_data = defaultdict(lambda: dict(net=None, dpls=list()))
+        # self.simulation_data = defaultdict(lambda: dict(net=None, dpls=list()))
+
+        ## Not sure if we need this redirection
+        #self._simulation_store = data_store.run_simulations
 
         # ==================================================
         # Simulation tab
@@ -1121,8 +1126,7 @@ class HNNGUI:
         self._opt_drives_out = Output().add_class("opt-drives-accordion-widgets")
 
         self._log_out = Output()
-
-        self.viz_manager = _VizManager(self.data, self.layout, self.fig_default_params)
+        self.viz_manager = _VizManager(self.layout, self.fig_default_params)
 
         # detailed configuration of backends
         self._backend_config_out = Output().add_class("backend-config-out")
@@ -1259,9 +1263,14 @@ class HNNGUI:
         }
 
     @property
-    def data(self):
-        """Provides easy access to simulation-related data."""
-        return {"simulation_data": self.simulation_data}
+    def run_simulations(self):
+        """Provides easy access to run simulation data."""
+        return data_store.run_simulations
+
+    @property
+    def loaded_simulations(self):
+        """Provides easy access to loaded simulation data."""
+        return  data_store.loaded_data
 
     @staticmethod
     def load_parameters(params_fname):
@@ -1323,7 +1332,7 @@ class HNNGUI:
 
         def _on_upload_data(change):
             return on_upload_data_change(
-                change, self.data, self.viz_manager, self._log_out
+                change, self.loaded_simulations, self.viz_manager, self._log_out
             )
 
         def _run_button_clicked(b):
@@ -1331,7 +1340,7 @@ class HNNGUI:
                 self.widget_simulation_name,
                 self._log_out,
                 self.drive_widgets,
-                self.data,
+                self.run_simulations,
                 self.widget_dt,
                 self.widget_tstop,
                 self.fig_default_params,
@@ -1358,12 +1367,10 @@ class HNNGUI:
                 self.widget_simulation_name,
                 self._log_out,
                 self.opt_drive_widgets,
-                self.data,
+                self.run_simulations,
                 self.widget_dt,
                 self.widget_tstop,
                 self.fig_default_params,
-                self.widget_default_smoothing,
-                self.widget_default_scaling,
                 self.widget_min_frequency,
                 self.widget_max_frequency,
                 self.widget_backend_selection,
@@ -1402,7 +1409,7 @@ class HNNGUI:
         def _simulation_list_change(value):
             # Simulation Data
             _simulation_data, file_extension = _serialize_simulation(
-                self._log_out, self.data, self.simulation_list_widget
+                self._log_out, self.run_simulations, self.simulation_list_widget
             )
 
             self.simulation_list_widget.disabled = False
@@ -1430,7 +1437,7 @@ class HNNGUI:
 
             # Network Configuration
             network_config = _serialize_config(
-                self._log_out, self.data, self.simulation_list_widget
+                self._log_out, self.run_simulations, self.simulation_list_widget
             )
             b64_net = base64.b64encode(network_config.encode())
 
@@ -2359,7 +2366,7 @@ class HNNGUI:
         # The obj_fun="dipole_corr" and "dipole_rmse" cases are very simple
         # ------------------------------------------------------------------------------
         self.opt_target_widgets["target_dipole_data"] = Dropdown(
-            options=self.data["simulation_data"].keys(),
+            options=data_store.run_simulation_names,
             value=prior_target_state.get("target_dipole_data", None),
             description="Target Data:",
             disabled=False,
@@ -4643,20 +4650,20 @@ def get_cell_param_default_value(cell_type_key, param_dict):
     return param_dict[cell_type_key]
 
 
-def on_upload_data_change(change, data, viz_manager, log_out):
+def on_upload_data_change(change, loaded_simulations, viz_manager, log_out):
     if len(change["owner"].value) == 0:
         return
     # Parsing file information from the 'change' object passed in from
     # the upload file widget.
     data_dict = change["new"][0]
     dict_name = data_dict["name"].rsplit(".", 1)
-    data_fname = dict_name[0]
+    data_filename = dict_name[0]
     file_extension = f".{dict_name[1]}"
 
     # If data was already loaded return
-    if data_fname in data["simulation_data"].keys():
+    if loaded_simulations.get(data_filename) is not None:
         with log_out:
-            logger.error(f"Found existing data: {data_fname}.")
+            logger.error(f"Found existing data: {data_filename}.")
         return
 
     # Read the file
@@ -4664,11 +4671,11 @@ def on_upload_data_change(change, data, viz_manager, log_out):
     ext_content = codecs.decode(ext_content, encoding="utf-8")
     with log_out:
         # Write loaded data to data object
-        data["simulation_data"][data_fname] = {
+        loaded_simulations[data_filename] = {
             "net": None,
             "dpls": [_read_dipole_txt(io.StringIO(ext_content), file_extension)],
         }
-        logger.info(f"External data {data_fname} loaded.")
+        logger.info(f"External data {data_filename} loaded.")
 
         # Create a dipole plot
         _template_name = "[Blank] single figure"
@@ -4679,7 +4686,7 @@ def on_upload_data_change(change, data, viz_manager, log_out):
         viz_manager._simulate_edit_figure(
             fig_name,
             ax_name="ax0",
-            simulation_name=data_fname,
+            simulation_name=data_filename,
             plot_type="current dipole",
             preprocessing_config=process_configs,
             operation="plot",
@@ -4873,7 +4880,7 @@ def run_button_clicked(
     widget_simulation_name,
     log_out,
     drive_widgets,
-    all_data,
+    simulation_data,
     dt,
     tstop,
     fig_default_params,
@@ -4895,13 +4902,19 @@ def run_button_clicked(
     global_gain_textfields,
 ):
     """Run the simulation and plot outputs."""
-    simulation_data = all_data["simulation_data"]
+    #simulation_data = data_store.run_simulations()
     with log_out:
         try:
             # clear empty trash simulations
-            for _name in tuple(simulation_data.keys()):
-                if len(simulation_data[_name]["dpls"]) == 0:
-                    del simulation_data[_name]
+            clear_empty_trash_simualtions(simulation_data)
+            ## Camilo: 
+            ## Maybe reconsidering this block of code. 
+            ## If the rest of the code fails,
+            ## stil we delete the empty trash simulations
+            # for _name in tuple(data_store.simulation_names()):
+            #     if not simulation_data[_name]["dpls"]:
+            #         del simulation_data[_name]
+            ###
 
             _sim_name = widget_simulation_name.value
             if (
@@ -5180,13 +5193,14 @@ def serialize_simulation(simulations_data, simulation_name):
     depending on the number of trials in the simulation.
 
     """
-    simulation_data = simulations_data["simulation_data"]
     csv_trials_output = []
     # CSV file headers
     headers = "times,agg,L2,L5"
     fmt = "%f, %f, %f, %f"
 
-    for dpl_trial in simulation_data[simulation_name]["dpls"]:
+    ## retrive simulation by name
+    simulation_data = simulations_data[simulation_name]
+    for dpl_trial in simulation_data["dpls"]:
         # Combine all data columns at once
         signals_matrix = np.column_stack(
             (
@@ -5222,7 +5236,7 @@ def serialize_config(simulations_data, simulation_name):
     """Serializes Network configuration data to json."""
 
     # Get network from data dictionary
-    net = simulations_data["simulation_data"][simulation_name]["net"]
+    net = simulations_data[simulation_name]["net"]
 
     # Write to buffer
     with io.StringIO() as output:
@@ -5835,12 +5849,10 @@ def run_opt_button_clicked(
     widget_simulation_name,
     log_out,
     opt_drive_widgets,
-    all_data,
+    simulation_data,
     dt,
     tstop,
     fig_default_params,
-    widget_default_smoothing,
-    widget_default_scaling,
     widget_min_frequency,
     widget_max_frequency,
     backend_selection,
@@ -5902,17 +5914,18 @@ def run_opt_button_clicked(
         try:
             # Sim data setup (and related input validation)
             # --------------------------------------------------------------------------
-            simulation_data = all_data["simulation_data"]
-
+            
+            clear_empty_trash_simualtions(simulation_data)
+            
             # clear empty trash simulations
             #
             # AES: a "trash" simulation appears to be created (named "default") even if
             # all a user does is load an external dipole data file. However, I do not
             # fully understand how VizManager et al. manages the simulation data (I find
             # it very confusing) so I am NOT touching it.
-            for _name in tuple(simulation_data.keys()):
-                if len(simulation_data[_name]["dpls"]) == 0:
-                    del simulation_data[_name]
+            # for _name in tuple(simulation_data.keys()):
+            #     if len(simulation_data[_name]["dpls"]) == 0:
+            #         del simulation_data[_name]
 
             _sim_name = widget_simulation_name.value
 
@@ -6278,7 +6291,7 @@ def run_opt_button_clicked(
             # optimization run
 
             # Return both the optimized config and the optimizer results
-            optimized_config = serialize_config(all_data, new_name)
+            optimized_config = serialize_config(simulations_data, new_name)
             opt_result = {
                 "initial_params": optim.initial_params,
                 "opt_params": optim.opt_params_,
