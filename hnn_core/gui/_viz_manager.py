@@ -717,8 +717,8 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     analysis_style = {"description_width": "200px"}
     layout = Layout(width="98%")
 
-    ## Only supporting simulations
-    simulation_names = tuple(data_store.run_simulation_names) or ("None",)
+    
+    simulation_names = tuple(data_store.all_simulation_names) or ("None",)
         
     default_smoothing = fig_default_params["default_smoothing"]
     default_scaling = fig_default_params["default_scaling"]
