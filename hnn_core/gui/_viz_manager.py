@@ -582,9 +582,9 @@ def _plot_on_axes(
 
     ## It must look up both run_data and laoded_data dicts for sim_name
     ## Maybe throw exception if there's no simulation?
-    single_simulation = ( 
-        data_store.run_simulations.get(sim_name) 
-        or data_store.loaded_data.get(sim_name))
+    single_simulation = data_store.run_simulations.get(
+        sim_name
+    ) or data_store.loaded_data.get(sim_name)
     simulation_plot_config = {
         "dipole_scaling": dipole_scaling.value,
         "dipole_smooth": dipole_smooth.value,
@@ -721,9 +721,8 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     analysis_style = {"description_width": "200px"}
     layout = Layout(width="98%")
 
-    
     simulation_names = tuple(data_store.all_simulation_names) or ("None",)
-        
+
     default_smoothing = fig_default_params["default_smoothing"]
     default_scaling = fig_default_params["default_scaling"]
     default_min_frequency = fig_default_params["default_min_frequency"]
@@ -731,7 +730,7 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     last_loaded_data = simulation_names[-1]
     simulation_selection = Dropdown(
         options=simulation_names,
-        value= last_loaded_data, ## Hopefully this works
+        value=last_loaded_data,  ## Hopefully this works
         description="Simulation Data:",
         disabled=False,
         layout=layout,
@@ -1177,7 +1176,7 @@ class _VizManager:
 
     def reset_fig_config_tabs(self, template_name=None):
         """Reset the figure config tabs with most recent simulation data."""
-        simulation_names = (tuple(data_store.all_simulation_names))
+        simulation_names = tuple(data_store.all_simulation_names)
 
         for tab in self.axes_config_tabs.children:
             controls = tab.children[1]
@@ -1272,7 +1271,7 @@ class _VizManager:
             self._external_data_widget, Dropdown
         ):
             all_sim_names = data_store.all_simulation_names or [" "]
-            
+
             prior_value = self._external_data_widget.value
             # Note updating the options of the widget resets the value
             # _external_data_widget is a DropDown
@@ -1389,7 +1388,7 @@ class _VizManager:
         simulation_name,
         plot_type,
         preprocessing_config,
-        operation
+        operation,
     ):
         """Manipulate a certain figure.
 
@@ -1416,7 +1415,7 @@ class _VizManager:
                 remove previously plotted visualizations.
         """
 
-        assert (simulation_name in data_store.all_simulation_names)
+        assert simulation_name in data_store.all_simulation_names
 
         assert plot_type in _plot_types
         assert operation in ("plot", "clear")
@@ -1470,7 +1469,6 @@ class _VizManager:
                 buttons.children[1].click()
         except Exception as e:
             raise
-            
 
 
 def _is_simulation(data):

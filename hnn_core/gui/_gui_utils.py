@@ -6,5 +6,5 @@ def clear_empty_trash_simualtions(simulation_data):
     # fully understand how VizManager et al. manages the simulation data (I find
     # it very confusing) so I am NOT touching it.
     for _name in tuple(simulation_data.keys()):
-                if not simulation_data[_name]["dpls"]:
-                    del simulation_data[_name]
+        if not simulation_data[_name]["dpls"]:
+            del simulation_data[_name]

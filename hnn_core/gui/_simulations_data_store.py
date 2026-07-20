@@ -1,22 +1,23 @@
 from collections import defaultdict
-    
+
 
 class DataStore(dict):
-    """Centralized store for HNN session data.
-    """
+    """Centralized store for HNN session data."""
 
     ## Avoid accidentaal reinitilizations
     _initialized = False
 
     def __init__(self):
-        
+
         if DataStore._initialized:
             return
-        super().__init__({
-            "run_simulations": defaultdict(lambda: dict(net=None, dpls=list())),
-            "loaded_data": defaultdict(lambda: dict(net=None, dpls=list())),
-            "networks": {}
-        })
+        super().__init__(
+            {
+                "run_simulations": defaultdict(lambda: dict(net=None, dpls=list())),
+                "loaded_data": defaultdict(lambda: dict(net=None, dpls=list())),
+                "networks": {},
+            }
+        )
         DataStore._initialized = True
 
     @property
@@ -26,11 +27,11 @@ class DataStore(dict):
     @property
     def run_simulation_names(self):
         return self["run_simulations"].keys()
-    
+
     @property
     def loaded_data_names(self):
         return self["loaded_data"].keys()
-        
+
     @property
     def loaded_data(self):
         return self["loaded_data"]

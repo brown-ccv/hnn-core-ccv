@@ -716,7 +716,7 @@ class HNNGUI:
         # self.simulation_data = defaultdict(lambda: dict(net=None, dpls=list()))
 
         ## Not sure if we need this redirection
-        #self._simulation_store = data_store.run_simulations
+        # self._simulation_store = data_store.run_simulations
 
         # ==================================================
         # Simulation tab
@@ -1270,7 +1270,7 @@ class HNNGUI:
     @property
     def loaded_simulations(self):
         """Provides easy access to loaded simulation data."""
-        return  data_store.loaded_data
+        return data_store.loaded_data
 
     @staticmethod
     def load_parameters(params_fname):
@@ -4903,7 +4903,7 @@ def run_button_clicked(
     global_gain_textfields,
 ):
     """Run the simulation and plot outputs."""
-    #simulation_data = data_store.run_simulations()
+    # simulation_data = data_store.run_simulations()
     with log_out:
         try:
             # clear empty trash simulations
@@ -5907,9 +5907,9 @@ def run_opt_button_clicked(
         try:
             # Sim data setup (and related input validation)
             # --------------------------------------------------------------------------
-            
+
             clear_empty_trash_simualtions(simulation_data)
-            
+
             # clear empty trash simulations
             #
             # AES: a "trash" simulation appears to be created (named "default") even if
