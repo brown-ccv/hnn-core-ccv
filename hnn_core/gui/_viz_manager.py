@@ -29,7 +29,7 @@ from hnn_core.dipole import _anticorr, _rmse, average_dipoles
 from hnn_core.gui._logging import logger
 from hnn_core.network_models import default_drive_colors
 from hnn_core.viz import plot_dipole, plot_tfr_morlet
-from hnn_core.gui._data_store import data_store
+from hnn_core.gui._simulations_data_store import data_store
 
 #
 _fig_placeholder = HTML(

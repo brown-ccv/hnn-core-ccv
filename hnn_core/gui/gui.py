@@ -51,7 +51,7 @@ from hnn_core import JoblibBackend, MPIBackend, simulate_dipole
 from hnn_core.cells_default import _exp_g_at_dist
 from hnn_core.dipole import _read_dipole_txt, average_dipoles
 from hnn_core.gui._logging import logger
-from hnn_core.gui._data_store import data_store
+from hnn_core.gui._simulations_data_store import data_store
 from hnn_core.gui._gui_utils import clear_empty_trash_simualtions
 from hnn_core.gui._viz_manager import _idx2figname, _VizManager
 from hnn_core.hnn_io import dict_to_network, write_network_configuration
