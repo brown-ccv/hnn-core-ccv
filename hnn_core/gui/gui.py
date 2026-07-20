@@ -4908,14 +4908,6 @@ def run_button_clicked(
         try:
             # clear empty trash simulations
             clear_empty_trash_simualtions(simulation_data)
-            ## Camilo: 
-            ## Maybe reconsidering this block of code. 
-            ## If the rest of the code fails,
-            ## stil we delete the empty trash simulations
-            # for _name in tuple(data_store.simulation_names()):
-            #     if not simulation_data[_name]["dpls"]:
-            #         del simulation_data[_name]
-            ###
 
             _sim_name = widget_simulation_name.value
             if (
@@ -5199,7 +5191,7 @@ def serialize_simulation(simulations_data, simulation_name):
     headers = "times,agg,L2,L5"
     fmt = "%f, %f, %f, %f"
 
-    ## retrive simulation by name
+    ## retrieve simulation by name
     simulation_data = simulations_data[simulation_name]
     for dpl_trial in simulation_data["dpls"]:
         # Combine all data columns at once
