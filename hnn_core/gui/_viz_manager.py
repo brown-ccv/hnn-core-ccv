@@ -1467,7 +1467,7 @@ class _VizManager:
                 buttons.children[0].click()
             elif operation == "clear":
                 buttons.children[1].click()
-        except Exception as e:
+        except Exception:
             raise
 
 

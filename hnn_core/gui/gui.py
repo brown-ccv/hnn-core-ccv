@@ -6284,7 +6284,7 @@ def run_opt_button_clicked(
             # optimization run
 
             # Return both the optimized config and the optimizer results
-            optimized_config = serialize_config(simulations_data, new_name)
+            optimized_config = serialize_config(simulation_data, new_name)
             opt_result = {
                 "initial_params": optim.initial_params,
                 "opt_params": optim.opt_params_,
