@@ -191,6 +191,7 @@ global_gain_type_lookup_dict = {
 
 class _OutputWidgetHandler(logging.Handler):
     def __init__(self, output_widget, *args, **kwargs):
+        data_store.reset()
         super(_OutputWidgetHandler, self).__init__(*args, **kwargs)
         self.out = output_widget
 
@@ -4671,7 +4672,6 @@ def on_upload_data_change(change, loaded_simulations, viz_manager, log_out):
     ext_content = codecs.decode(ext_content, encoding="utf-8")
     with log_out:
         # Write loaded data to data object
-        print(len(data_store.run_simulations))
         loaded_simulations[data_filename] = {
             "net": None,
             "dpls": [_read_dipole_txt(io.StringIO(ext_content), file_extension)],
@@ -6307,7 +6307,9 @@ def run_opt_button_clicked(
                 opt_result["psd_relative_bandpower"] = psd_relative_bandpower
             return optimized_config, opt_result
 
-        except Exception:
+        except Exception as e:
+            print(repr(e))
+            traceback.print_exc()
             simulation_status_bar.value = simulation_status_contents["failed"]
             logger.error(traceback.format_exc())
             return

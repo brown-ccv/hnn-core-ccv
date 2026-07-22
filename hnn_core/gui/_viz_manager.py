@@ -602,11 +602,15 @@ def _plot_on_axes(
     # If target_simulations is not None and we are plotting a dipole,
     # we need to plot the target dipole as well.
     if (
-        data_widget.value in data_store.run_simulation_names
+        data_widget.value in data_store.all_simulation_names
         and plot_type == "current dipole"
     ):
         target_sim_name = data_widget.value
-        target_sim = data_store.run_simulations[target_sim_name]
+        target_sim = (
+            data_store.run_simulations.get(target_sim_name)
+            or data_store.loaded_data.get(target_sim_name)
+            )
+        
         data_plot_config = {
             "dipole_scaling": data_scaling.value,
             "dipole_smooth": data_smooth.value,
@@ -1169,6 +1173,7 @@ class _VizManager:
         return {
             "use_ipympl": self.use_dynamic_rendering,
             "fig_idx": self.fig_idx,
+            "simulations": data_store.run_simulations, # ---> some tests need this entry
             "visualization_window": self.viz_layout["visualization_window"],
             "viz_out_figsize": self.viz_layout["visualization_output_figsize"],
             "figs": self.figs,
