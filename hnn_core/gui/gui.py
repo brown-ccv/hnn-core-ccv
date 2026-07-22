@@ -1369,6 +1369,7 @@ class HNNGUI:
                 self._log_out,
                 self.opt_drive_widgets,
                 self.run_simulations,
+                self.loaded_simulations,
                 self.widget_dt,
                 self.widget_tstop,
                 self.fig_default_params,
@@ -5843,6 +5844,7 @@ def run_opt_button_clicked(
     log_out,
     opt_drive_widgets,
     simulation_data,
+    loaded_simulations,
     dt,
     tstop,
     fig_default_params,
@@ -5963,8 +5965,14 @@ def run_opt_button_clicked(
                 else:
                     # Extract the actual target data Like everywhere else in the GUI, we
                     # only support usage of single-trial dipole data.
+                    sim_data = ( simulation_data.get(opt_rmse_target_data_name) or 
+                    loaded_simulations.get(opt_rmse_target_data_name) )
+                    
+                    if not sim_data:
+                        raise  RuntimeError(f"The {sim_data} value is invalid.")
+                    
                     target_dipole = average_dipoles(
-                        simulation_data[opt_rmse_target_data_name]["dpls"]
+                        sim_data["dpls"]
                     )
             # Input validation
             # --------------------------------------------------------------------------
