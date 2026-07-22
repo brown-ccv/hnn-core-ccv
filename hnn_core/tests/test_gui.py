@@ -1242,16 +1242,13 @@ def test_gui_upload_csv_simulation(setup_gui):
     assert type(gui.loaded_simulations["test_default"]["dpls"]) is list
     assert len(gui.viz_manager.data["figs"]) == 1
     assert (
-        len(gui.loaded_simulations["test_default"]["dpls"][0].data["agg"])
-        == data_lengh
+        len(gui.loaded_simulations["test_default"]["dpls"][0].data["agg"]) == data_lengh
     )
     assert (
-        len(gui.loaded_simulations["test_default"]["dpls"][0].data["L2"])
-        == data_lengh
+        len(gui.loaded_simulations["test_default"]["dpls"][0].data["L2"]) == data_lengh
     )
     assert (
-        len(gui.loaded_simulations["test_default"]["dpls"][0].data["L5"])
-        == data_lengh
+        len(gui.loaded_simulations["test_default"]["dpls"][0].data["L5"]) == data_lengh
     )
 
 

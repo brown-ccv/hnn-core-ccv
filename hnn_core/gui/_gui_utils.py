@@ -1,4 +1,4 @@
-    # clear empty trash simulations
+# clear empty trash simulations
 def clear_empty_trash_simualtions(simulation_data):
 
     # AES: a "trash" simulation appears to be created (named "default") even if

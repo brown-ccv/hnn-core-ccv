@@ -5965,15 +5965,14 @@ def run_opt_button_clicked(
                 else:
                     # Extract the actual target data Like everywhere else in the GUI, we
                     # only support usage of single-trial dipole data.
-                    sim_data = ( simulation_data.get(opt_rmse_target_data_name) or 
-                    loaded_simulations.get(opt_rmse_target_data_name) )
-                    
+                    sim_data = simulation_data.get(
+                        opt_rmse_target_data_name
+                    ) or loaded_simulations.get(opt_rmse_target_data_name)
+
                     if not sim_data:
-                        raise  RuntimeError(f"The {sim_data} value is invalid.")
-                    
-                    target_dipole = average_dipoles(
-                        sim_data["dpls"]
-                    )
+                        raise RuntimeError(f"The {sim_data} value is invalid.")
+
+                    target_dipole = average_dipoles(sim_data["dpls"])
             # Input validation
             # --------------------------------------------------------------------------
             # First, let's make a Network of the current state of the GUI, and call it
