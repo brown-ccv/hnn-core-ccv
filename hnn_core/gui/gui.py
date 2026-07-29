@@ -2368,7 +2368,7 @@ class HNNGUI:
         # The obj_fun="dipole_corr" and "dipole_rmse" cases are very simple
         # ------------------------------------------------------------------------------
         self.opt_target_widgets["target_dipole_data"] = Dropdown(
-            options=data_store.run_simulation_names,
+            options=data_store.run_simulations_names,
             value=prior_target_state.get("target_dipole_data", None),
             description="Target Data:",
             disabled=False,

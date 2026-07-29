@@ -19,7 +19,7 @@ class SimulationDataStore(dict):
         return self["run_simulations"]
 
     @property
-    def run_simulation_names(self):
+    def run_simulations_names(self):
         return self["run_simulations"].keys()
 
     @property
@@ -35,7 +35,7 @@ class SimulationDataStore(dict):
         return self["networks"]
 
     @property
-    def all_simulation_names(self):
+    def all_simulation_and_data_names(self):
         return list(self["run_simulations"].keys()) + list(self["loaded_data"].keys())
 
     def reset(self):

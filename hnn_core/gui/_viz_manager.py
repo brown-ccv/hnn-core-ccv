@@ -161,7 +161,7 @@ def check_sim_plot_types(new_sim_name, plot_type_selection, target_selection, da
     else:
         plot_type_selection.options = _plot_types
     # deal with target data
-    all_possible_targets = list(data_store.all_simulation_names)
+    all_possible_targets = list(data_store.all_simulation_and_data_names)
     all_possible_targets.remove(new_sim_name)
     target_selection.options = all_possible_targets + ["None"]
     target_selection.value = "None"
@@ -602,7 +602,7 @@ def _plot_on_axes(
     # If target_simulations is not None and we are plotting a dipole,
     # we need to plot the target dipole as well.
     if (
-        data_widget.value in data_store.all_simulation_names
+        data_widget.value in data_store.all_simulation_and_data_names
         and plot_type == "current dipole"
     ):
         target_sim_name = data_widget.value
@@ -724,7 +724,8 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     analysis_style = {"description_width": "200px"}
     layout = Layout(width="98%")
 
-    simulation_names = tuple(data_store.all_simulation_names) or ("None",)
+    #simulation_names = tuple(data_store.all_simulation_and_data_names) or ("None",)
+    simulation_names = tuple(data_store.run_simulations_names) or ("None",)
 
     default_smoothing = fig_default_params["default_smoothing"]
     default_scaling = fig_default_params["default_scaling"]
@@ -1180,7 +1181,7 @@ class _VizManager:
 
     def reset_fig_config_tabs(self, template_name=None):
         """Reset the figure config tabs with most recent simulation data."""
-        simulation_names = tuple(data_store.all_simulation_names)
+        simulation_names = tuple(data_store.all_simulation_and_data_names)
 
         for tab in self.axes_config_tabs.children:
             controls = tab.children[1]
@@ -1274,7 +1275,7 @@ class _VizManager:
         if hasattr(self, "_external_data_widget") and isinstance(
             self._external_data_widget, Dropdown
         ):
-            all_sim_names = data_store.all_simulation_names or [" "]
+            all_sim_names = data_store.all_simulation_and_data_names or [" "]
 
             prior_value = self._external_data_widget.value
             # Note updating the options of the widget resets the value
@@ -1311,7 +1312,7 @@ class _VizManager:
     @unlink_relink(attribute="figs_config_tab_link")
     def add_figure(self, b=None):
         """Add a figure and corresponding config tabs to the dashboard."""
-        if not data_store.all_simulation_names:
+        if not data_store.all_simulation_and_data_names:
             logger.error("No data has been loaded")
             return
 
@@ -1419,7 +1420,7 @@ class _VizManager:
                 remove previously plotted visualizations.
         """
 
-        assert simulation_name in data_store.all_simulation_names
+        assert simulation_name in data_store.all_simulation_and_data_names
 
         assert plot_type in _plot_types
         assert operation in ("plot", "clear")
