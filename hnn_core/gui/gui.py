@@ -6305,7 +6305,7 @@ def run_opt_button_clicked(
                 opt_result["psd_relative_bandpower"] = psd_relative_bandpower
             return optimized_config, opt_result
 
-        except Exception as e:
+        except Exception:
             simulation_status_bar.value = simulation_status_contents["failed"]
             logger.error(traceback.format_exc())
             return
