@@ -2259,7 +2259,7 @@ def test_traceback_logging(setup_gui, monkeypatch):
 
 
 def test_data_store_direct_reset():
-    """Use DataStore.reset() to clear state and preseve defaultdict factories"""
+    """Use DataStore.reset() to clear state and preserve defaultdict factories"""
 
     ## This import is only nedeed in this scope
     from hnn_core.gui._data_store import DataStore
