@@ -51,8 +51,8 @@ from hnn_core import JoblibBackend, MPIBackend, simulate_dipole
 from hnn_core.cells_default import _exp_g_at_dist
 from hnn_core.dipole import _read_dipole_txt, average_dipoles
 from hnn_core.gui._logging import logger
-from hnn_core.gui._simulations_data_store import data_store
-from hnn_core.gui._gui_utils import clear_empty_trash_simualtions
+from hnn_core.gui._data_store import data_store
+from hnn_core.gui._gui_utils import clear_empty_trash_simulations
 from hnn_core.gui._viz_manager import _idx2figname, _VizManager
 from hnn_core.hnn_io import dict_to_network, write_network_configuration
 from hnn_core.network import pick_connection, _check_global_synaptic_gains_uniformity
@@ -716,9 +716,6 @@ class HNNGUI:
         # In-memory storage of all simulation and visualization related data
         # self.simulation_data = defaultdict(lambda: dict(net=None, dpls=list()))
 
-        ## Not sure if we need this redirection
-        # self._simulation_store = data_store.run_simulations
-
         # ==================================================
         # Simulation tab
         # ==================================================
@@ -1263,15 +1260,15 @@ class HNNGUI:
             "current_sim_name": self.widget_simulation_name.value,
         }
 
-    @property
-    def run_simulations(self):
-        """Provides easy access to run simulation data."""
-        return data_store.run_simulations
+    # @property
+    # def run_simulations(self):
+    #     """Provides easy access to run simulation data."""
+    #     return data_store.simulated_data
 
-    @property
-    def loaded_simulations(self):
-        """Provides easy access to loaded simulation data."""
-        return data_store.loaded_data
+    # @property
+    # def loaded_simulations(self):
+    #     """Provides easy access to loaded simulation data."""
+    #     return data_store.loaded_data
 
     @staticmethod
     def load_parameters(params_fname):
@@ -1332,16 +1329,13 @@ class HNNGUI:
             )
 
         def _on_upload_data(change):
-            return on_upload_data_change(
-                change, self.loaded_simulations, self.viz_manager, self._log_out
-            )
+            return on_upload_data_change(change, self.viz_manager, self._log_out)
 
         def _run_button_clicked(b):
             return run_button_clicked(
                 self.widget_simulation_name,
                 self._log_out,
                 self.drive_widgets,
-                self.run_simulations,
                 self.widget_dt,
                 self.widget_tstop,
                 self.fig_default_params,
@@ -1368,8 +1362,6 @@ class HNNGUI:
                 self.widget_simulation_name,
                 self._log_out,
                 self.opt_drive_widgets,
-                self.run_simulations,
-                self.loaded_simulations,
                 self.widget_dt,
                 self.widget_tstop,
                 self.fig_default_params,
@@ -1411,7 +1403,7 @@ class HNNGUI:
         def _simulation_list_change(value):
             # Simulation Data
             _simulation_data, file_extension = _serialize_simulation(
-                self._log_out, self.run_simulations, self.simulation_list_widget
+                self._log_out, data_store.simulated_data, self.simulation_list_widget
             )
 
             self.simulation_list_widget.disabled = False
@@ -1439,7 +1431,7 @@ class HNNGUI:
 
             # Network Configuration
             network_config = _serialize_config(
-                self._log_out, self.run_simulations, self.simulation_list_widget
+                self._log_out, data_store.simulated_data, self.simulation_list_widget
             )
             b64_net = base64.b64encode(network_config.encode())
 
@@ -2368,7 +2360,7 @@ class HNNGUI:
         # The obj_fun="dipole_corr" and "dipole_rmse" cases are very simple
         # ------------------------------------------------------------------------------
         self.opt_target_widgets["target_dipole_data"] = Dropdown(
-            options=data_store.run_simulations_names,
+            options=data_store.simulated_data_names,
             value=prior_target_state.get("target_dipole_data", None),
             description="Target Data:",
             disabled=False,
@@ -4652,7 +4644,7 @@ def get_cell_param_default_value(cell_type_key, param_dict):
     return param_dict[cell_type_key]
 
 
-def on_upload_data_change(change, loaded_simulations, viz_manager, log_out):
+def on_upload_data_change(change, viz_manager, log_out):
     if len(change["owner"].value) == 0:
         return
     # Parsing file information from the 'change' object passed in from
@@ -4663,7 +4655,7 @@ def on_upload_data_change(change, loaded_simulations, viz_manager, log_out):
     file_extension = f".{dict_name[1]}"
 
     # If data was already loaded return
-    if loaded_simulations.get(data_filename) is not None:
+    if data_store.loaded_data.get(data_filename) is not None:
         with log_out:
             logger.error(f"Found existing data: {data_filename}.")
         return
@@ -4673,7 +4665,7 @@ def on_upload_data_change(change, loaded_simulations, viz_manager, log_out):
     ext_content = codecs.decode(ext_content, encoding="utf-8")
     with log_out:
         # Write loaded data to data object
-        loaded_simulations[data_filename] = {
+        data_store.loaded_data[data_filename] = {
             "net": None,
             "dpls": [_read_dipole_txt(io.StringIO(ext_content), file_extension)],
         }
@@ -4882,7 +4874,6 @@ def run_button_clicked(
     widget_simulation_name,
     log_out,
     drive_widgets,
-    simulation_data,
     dt,
     tstop,
     fig_default_params,
@@ -4904,11 +4895,11 @@ def run_button_clicked(
     global_gain_textfields,
 ):
     """Run the simulation and plot outputs."""
-    # simulation_data = data_store.run_simulations()
+    simulation_data = data_store.simulated_data
     with log_out:
         try:
             # clear empty trash simulations
-            clear_empty_trash_simualtions(simulation_data)
+            clear_empty_trash_simulations(simulation_data)
 
             _sim_name = widget_simulation_name.value
             if (
@@ -5843,8 +5834,6 @@ def run_opt_button_clicked(
     widget_simulation_name,
     log_out,
     opt_drive_widgets,
-    simulation_data,
-    loaded_simulations,
     dt,
     tstop,
     fig_default_params,
@@ -5906,11 +5895,13 @@ def run_opt_button_clicked(
     This was built based off of `run_button_clicked`.
     """
     with log_out:
+        simulation_data = data_store.simulated_data
+        loaded_data = data_store.loaded_data
         try:
             # Sim data setup (and related input validation)
             # --------------------------------------------------------------------------
 
-            clear_empty_trash_simualtions(simulation_data)
+            clear_empty_trash_simulations(simulation_data)
 
             # clear empty trash simulations
             #
@@ -5967,7 +5958,7 @@ def run_opt_button_clicked(
                     # only support usage of single-trial dipole data.
                     sim_data = simulation_data.get(
                         opt_rmse_target_data_name
-                    ) or loaded_simulations.get(opt_rmse_target_data_name)
+                    ) or loaded_data.get(opt_rmse_target_data_name)
 
                     if not sim_data:
                         raise RuntimeError(f"The {sim_data} value is invalid.")
@@ -6315,8 +6306,6 @@ def run_opt_button_clicked(
             return optimized_config, opt_result
 
         except Exception as e:
-            print(repr(e))
-            traceback.print_exc()
             simulation_status_bar.value = simulation_status_contents["failed"]
             logger.error(traceback.format_exc())
             return

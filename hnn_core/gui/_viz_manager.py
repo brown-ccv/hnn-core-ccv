@@ -29,7 +29,7 @@ from hnn_core.dipole import _anticorr, _rmse, average_dipoles
 from hnn_core.gui._logging import logger
 from hnn_core.network_models import default_drive_colors
 from hnn_core.viz import plot_dipole, plot_tfr_morlet
-from hnn_core.gui._simulations_data_store import data_store
+from hnn_core.gui._data_store import data_store
 
 #
 _fig_placeholder = HTML(
@@ -161,7 +161,7 @@ def check_sim_plot_types(new_sim_name, plot_type_selection, target_selection, da
     else:
         plot_type_selection.options = _plot_types
     # deal with target data
-    all_possible_targets = list(data_store.all_simulation_and_data_names)
+    all_possible_targets = list(data_store.all_data_names)
     all_possible_targets.remove(new_sim_name)
     target_selection.options = all_possible_targets + ["None"]
     target_selection.value = "None"
@@ -508,7 +508,7 @@ def _avg_dipole_check(dpls):
 
 
 def _plot_on_axes(
-    b,
+    button,
     simulations_widget,
     widgets_plot_type,
     data_widget,
@@ -535,7 +535,7 @@ def _plot_on_axes(
 
     Parameters
     ----------
-    b : ipywidgets.Button
+    button : ipywidgets.Button
     widgets_simulation : ipywidgets.Dropdown
         A dropdown widget that contains all the simulation names.
     widgets_plot_type : ipywidgets.Dropdown
@@ -573,16 +573,16 @@ def _plot_on_axes(
     """
     sim_name = simulations_widget.value
     plot_type = widgets_plot_type.value
-    # disable add plots for types that do not support overlay
+    # disable 'add plots' button for types that do not support overlay
     if plot_type in _no_overlay_plot_types:
-        b.disabled = True
+        button.disabled = True
 
     # freeze plot type
     widgets_plot_type.disabled = True
 
     ## It must look up both run_data and laoded_data dicts for sim_name
     ## Maybe throw exception if there's no simulation?
-    single_simulation = data_store.run_simulations.get(
+    single_simulation = data_store.simulated_data.get(
         sim_name
     ) or data_store.loaded_data.get(sim_name)
     simulation_plot_config = {
@@ -601,12 +601,9 @@ def _plot_on_axes(
 
     # If target_simulations is not None and we are plotting a dipole,
     # we need to plot the target dipole as well.
-    if (
-        data_widget.value in data_store.all_simulation_and_data_names
-        and plot_type == "current dipole"
-    ):
+    if data_widget.value in data_store.all_data_names and plot_type == "current dipole":
         target_sim_name = data_widget.value
-        target_sim = data_store.run_simulations.get(
+        target_sim = data_store.simulated_data.get(
             target_sim_name
         ) or data_store.loaded_data.get(target_sim_name)
 
@@ -724,7 +721,7 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     analysis_style = {"description_width": "200px"}
     layout = Layout(width="98%")
 
-    simulation_names = tuple(data_store.all_simulation_and_data_names) or ("None",)
+    simulation_names = tuple(data_store.all_data_names) or ("None",)
 
     default_smoothing = fig_default_params["default_smoothing"]
     default_scaling = fig_default_params["default_scaling"]
@@ -1077,8 +1074,6 @@ class _VizManager:
 
     Parameters
     ----------
-    simulation_store : SimulationDataStore
-        Centralized store for all simulation data. Consumed at runtime
     viz_layout : dict
         A dict about visualization layout specs
 
@@ -1154,7 +1149,7 @@ class _VizManager:
         # data
         self.fig_idx = {"idx": 1}
         self.figs = {}
-        self._simulation_store = data_store.loaded_data
+        # self._simulation_store = data_store.loaded_data
 
     @property
     def widgets(self):
@@ -1172,7 +1167,6 @@ class _VizManager:
         return {
             "use_ipympl": self.use_dynamic_rendering,
             "fig_idx": self.fig_idx,
-            "simulations": data_store.run_simulations,  # ---> some tests need this entry
             "visualization_window": self.viz_layout["visualization_window"],
             "viz_out_figsize": self.viz_layout["visualization_output_figsize"],
             "figs": self.figs,
@@ -1180,7 +1174,7 @@ class _VizManager:
 
     def reset_fig_config_tabs(self, template_name=None):
         """Reset the figure config tabs with most recent simulation data."""
-        simulation_names = tuple(data_store.all_simulation_and_data_names)
+        simulation_names = tuple(data_store.all_data_names)
 
         for tab in self.axes_config_tabs.children:
             controls = tab.children[1]
@@ -1274,7 +1268,7 @@ class _VizManager:
         if hasattr(self, "_external_data_widget") and isinstance(
             self._external_data_widget, Dropdown
         ):
-            all_sim_names = data_store.all_simulation_and_data_names or [" "]
+            all_sim_names = data_store.all_data_names or [" "]
 
             prior_value = self._external_data_widget.value
             # Note updating the options of the widget resets the value
@@ -1290,14 +1284,9 @@ class _VizManager:
         # check if plot set type requires loaded sim-data
         if _check_template_type_is_data_dependant(template_type.new):
             # Add only simulated data
-            sim_names = [
-                simulations
-                for simulations, sim_name in data_store.run_simulations.items()
-                if sim_name["net"] is not None
-            ]
-
-            if len(sim_names) == 0:
-                sim_names = [" "]
+            # list automatically loops through the keys and appends them
+            # or falls back to a list containing a single space string
+            sim_names = list(data_store.simulated_data) or [" "]
 
             self.datasets_dropdown.options = sim_names
             self.datasets_dropdown.value = sim_names[0]
@@ -1311,8 +1300,8 @@ class _VizManager:
     @unlink_relink(attribute="figs_config_tab_link")
     def add_figure(self, b=None):
         """Add a figure and corresponding config tabs to the dashboard."""
-        if not data_store.all_simulation_and_data_names:
-            logger.error("No data has been loaded")
+        if not data_store.all_data_names:
+            logger.error("No data has been simulated or loaded")
             return
 
         template_name = self.widgets["templates_dropdown"].value
@@ -1320,8 +1309,8 @@ class _VizManager:
         ## Only checking run simulations
         if is_data_template:
             sim_name = self.widgets["dataset_dropdown"].value
-            if sim_name not in data_store.run_simulations:
-                logger.error("No simulation data has been loaded")
+            if sim_name not in data_store.simulated_data:
+                logger.error("No simulation data has been simulated or loaded")
                 return
 
         # Use data_templates dictionary if it's a data dependent layout
@@ -1419,7 +1408,7 @@ class _VizManager:
                 remove previously plotted visualizations.
         """
 
-        assert simulation_name in data_store.all_simulation_and_data_names
+        assert simulation_name in data_store.all_data_names
 
         assert plot_type in _plot_types
         assert operation in ("plot", "clear")
