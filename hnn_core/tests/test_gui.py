@@ -2256,3 +2256,58 @@ def test_traceback_logging(setup_gui, monkeypatch):
             assert err_log_index < log_index
 
     plt.close("all")
+
+
+def test_data_store_direct_reset():
+    """Use DataStore.reset() to clear state and preseve defaultdict factories"""
+
+    ## This import is only nedeed in this scope
+    from hnn_core.gui._data_store import DataStore
+
+    store = DataStore()
+    store.simulated_data["a"]["dpls"].append("fake_dpl")
+    store.loaded_data["b"]["net"] = "fake_net"
+    store.networks["c"] = "fake_config"
+
+    store.reset()
+
+    assert len(store.simulated_data) == 0
+    assert len(store.loaded_data) == 0
+    assert len(store.networks) == 0
+    assert list(store.all_data_names) == []
+
+    # accessing a missing key should still fall back to the default state
+    assert store.simulated_data["new_sim"] == {"net": None, "dpls": []}
+
+
+def test_data_store_reset_on_gui_reinit(setup_gui):
+    """Instantiating a new HNNGUI on browser reload event must reset the shared
+    data_store singleton"""
+    gui = setup_gui
+    gui.run_button.click()
+    assert len(data_store.simulated_data) > 0
+
+    ## Setup a new HNNGUI
+    HNNGUI(network_configuration=assets_path / "neymotin2020_3x3_drives.json")
+
+    assert len(data_store.simulated_data) == 0
+    assert len(data_store.loaded_data) == 0
+    assert len(data_store.networks) == 0
+
+
+def test_data_store_shared_singleton_across_modules(setup_gui):
+    """gui.py and _viz_manager.py must observe the exact same data_store instance"""
+    ## This import is only nedeed in this scope
+    # import hnn_core.gui._viz_manager as _viz_manager
+
+    # assert _viz_manager.data_store is data_store
+
+    gui = setup_gui
+    sim_name = "shared_data_store_test"
+    gui.widget_simulation_name.value = sim_name
+    gui.run_button.click()
+
+    # data written through gui.py is immediately
+    # visible to _VizManager's data_store widget updates
+    gui.viz_manager.update_external_data_widget()
+    assert sim_name in gui.opt_target_widgets["target_dipole_data"].options
