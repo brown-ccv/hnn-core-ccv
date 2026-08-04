@@ -27,7 +27,6 @@ from hnn_core.gui._viz_manager import (
     _plot_types,
     _no_overlay_plot_types,
     unlink_relink,
-    data_templates,
 )
 from hnn_core.gui.gui import (
     _GUI_PrintToLogger,
