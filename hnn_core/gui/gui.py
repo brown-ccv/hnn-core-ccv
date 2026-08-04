@@ -1329,8 +1329,12 @@ class HNNGUI:
             )
 
         def _on_upload_data(change):
-            return on_upload_data_change(change, self.viz_manager, self._log_out, 
-                                         self.opt_target_widgets["target_dipole_data"])
+            return on_upload_data_change(
+                change,
+                self.viz_manager,
+                self._log_out,
+                self.opt_target_widgets["target_dipole_data"],
+            )
 
         def _run_button_clicked(b):
             return run_button_clicked(

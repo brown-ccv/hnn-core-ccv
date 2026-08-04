@@ -27,6 +27,7 @@ from hnn_core.gui._viz_manager import (
     _plot_types,
     _no_overlay_plot_types,
     unlink_relink,
+    data_templates,
 )
 from hnn_core.gui.gui import (
     _GUI_PrintToLogger,
@@ -2307,7 +2308,8 @@ def test_data_store_shared_singleton_across_modules(setup_gui):
     gui.widget_simulation_name.value = sim_name
     gui.run_button.click()
 
+    assert sim_name in gui.opt_target_widgets["target_dipole_data"].options
     # data written through gui.py is immediately
     # visible to _VizManager's data_store widget updates
-    gui.viz_manager.update_external_data_widget()
-    assert sim_name in gui.opt_target_widgets["target_dipole_data"].options
+    gui.viz_manager.templates_dropdown.value = "Drive-Dipole (2x1)"
+    assert sim_name in gui.viz_manager.datasets_dropdown.value
