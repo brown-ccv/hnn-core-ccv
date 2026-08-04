@@ -1204,7 +1204,7 @@ class _VizManager:
         self._simulate_switch_fig_template(template_name)
 
         # Update the external data widget (widget_opt_target_data)
-        self.update_external_data_widget()
+        # self.update_external_data_widget()
 
     def build_visualization_window(self):
         """build visualization-window (to occupy AppLayout's right_sidebar)"""
@@ -1251,6 +1251,7 @@ class _VizManager:
 
         return visualization_tab
 
+    ## Update gui.opt_target_widgets["target_dipole_data"]
     def update_external_data_widget(self):
         """Enable exfiltration of simulation data by `HNNGUI` objects.
 
@@ -1270,7 +1271,9 @@ class _VizManager:
         ):
             all_sim_names = data_store.all_data_names or [" "]
 
+            ## self._external_data_widget = gui.opt_target_widgets["target_dipole_data"]
             prior_value = self._external_data_widget.value
+
             # Note updating the options of the widget resets the value
             # _external_data_widget is a DropDown
             self._external_data_widget.options = all_sim_names
