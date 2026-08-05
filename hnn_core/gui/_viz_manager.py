@@ -727,18 +727,18 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     default_scaling = fig_default_params["default_scaling"]
     default_min_frequency = fig_default_params["default_min_frequency"]
     default_max_frequency = fig_default_params["default_max_frequency"]
-    # Not None last simulation. 
+    # Not None last simulation.
     # Altought, the previos position to `None`` is `simulation_names[-2]`
     # on an edge case this could not be true. So for good code practices let's
     # iterate the tuple in reverse looking for first sim_name that is not `None`
-    last_simulation_data = next( 
+    last_simulation_data = next(
         (sim_name for sim_name in reversed(simulation_names) if sim_name != "None"),
         None,
     )
-    
+
     simulation_selection = Dropdown(
         options=simulation_names,
-        value=last_simulation_data, 
+        value=last_simulation_data,
         description="Simulation Data:",
         disabled=False,
         layout=layout,
@@ -1125,8 +1125,8 @@ class _VizManager:
             (self.figs_tabs, "selected_index"),
         )
 
-        #template_names = list(data_templates.keys())
-        #template_names.extend(list(fig_templates.keys()))
+        # template_names = list(data_templates.keys())
+        # template_names.extend(list(fig_templates.keys()))
         # self.templates_dropdown = Dropdown(
         #     description="Figure Template:",
         #     options=template_names,
@@ -1261,7 +1261,7 @@ class _VizManager:
                     [
                         config_sub_panel,
                         self.viz_tab_simulation_data_dropdown,
-                        self.viz_tab_loaded_data_dropdown
+                        self.viz_tab_loaded_data_dropdown,
                     ],
                     layout=Layout(
                         display="flex",
@@ -1306,7 +1306,7 @@ class _VizManager:
 
     def _layout_template_change(self, template_type):
         # check if plot set type requires loaded sim-data
-        # PreReq: The simulatio/loaded data is already defined in the 
+        # PreReq: The simulatio/loaded data is already defined in the
         # viz_tab_simulation_data_dropdown or viz_tab_loaded_data_dropdown
         # we dont do any additional filter here.
         if _check_template_type_is_data_dependant(template_type.new):
@@ -1319,17 +1319,16 @@ class _VizManager:
             self.viz_tab_simulation_data_dropdown.value = sim_names[0]
             # show list of simulated to gui dropdown
             self.viz_tab_simulation_data_dropdown.layout.display = "flex"
-            self.viz_tab_loaded_data_dropdown.layout.display  = "none"
+            self.viz_tab_loaded_data_dropdown.layout.display = "none"
         else:
             # hide sim-data dropdown if not using a pre-programmed Figure Template (this
             # currently only applies to the "[Blank] Xrow x Ycol" Figure Templates)
             sim_names = list(data_store.loaded_data) or [" "]
-            
+
             self.viz_tab_loaded_data_dropdown.options = sim_names
             self.viz_tab_loaded_data_dropdown.value = sim_names[0]
             self.viz_tab_simulation_data_dropdown.layout.display = "none"
             self.viz_tab_loaded_data_dropdown.layout.display = "flex"
-            
 
     @unlink_relink(attribute="figs_config_tab_link")
     def add_figure(self, b=None):
@@ -1394,26 +1393,24 @@ class _VizManager:
 
     ## This function resets the state of the templates names list dropdown
     def _simulate_switch_fig_template(self, template_name: str):
-        # By default the dropdown is empty. 
+        # By default the dropdown is empty.
         # Check if we need to populate it
 
         # A place holder to do -1 operations looking up template name
         template_names = list(data_templates.keys()) + list(fig_templates.keys())
         if not self.templates_dropdown.options:
-            self.templates_dropdown.options =  template_names
+            self.templates_dropdown.options = template_names
+            self.make_fig_button.disabled = False
 
-        assert template_name in template_names, (
-            "No such template"
-        )
-        
+        assert template_name in template_names, "No such template"
+
         if _check_template_type_is_data_dependant(template_name):
             self.viz_tab_simulation_data_dropdown.layout.display = "flex"
             self.viz_tab_loaded_data_dropdown.layout.display = "none"
         else:
             self.viz_tab_simulation_data_dropdown.layout.display = "none"
             self.viz_tab_loaded_data_dropdown.layout.display = "flex"
-            
-        
+
         self.templates_dropdown.value = template_name
 
     def _simulate_delete_figure(self, fig_name):
