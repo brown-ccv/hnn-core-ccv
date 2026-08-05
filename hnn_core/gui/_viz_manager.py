@@ -153,7 +153,7 @@ data_templates = {
 }
 
 
-def check_sim_plot_types(new_sim_name, plot_type_selection, target_selection, data):
+def check_sim_plot_types(new_sim_name, plot_type_selection, target_selection):
     if new_sim_name in data_store.loaded_data_names:
         plot_type_selection.options = [
             pt for pt in _plot_types if pt not in _ext_data_disabled_plot_types
@@ -721,16 +721,24 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     analysis_style = {"description_width": "200px"}
     layout = Layout(width="98%")
 
-    simulation_names = tuple(data_store.all_data_names) or ("None",)
+    simulation_names = tuple(data_store.simulated_data) + ("None",)
 
     default_smoothing = fig_default_params["default_smoothing"]
     default_scaling = fig_default_params["default_scaling"]
     default_min_frequency = fig_default_params["default_min_frequency"]
     default_max_frequency = fig_default_params["default_max_frequency"]
-    last_loaded_data = simulation_names[-1]
+    # Not None last simulation. 
+    # Altought, the previos position to `None`` is `simulation_names[-2]`
+    # on an edge case this could not be true. So for good code practices let's
+    # iterate the tuple in reverse looking for first sim_name that is not `None`
+    last_simulation_data = next( 
+        (sim_name for sim_name in reversed(simulation_names) if sim_name != "None"),
+        None,
+    )
+    
     simulation_selection = Dropdown(
         options=simulation_names,
-        value=last_loaded_data,  ## Hopefully this works
+        value=last_simulation_data, 
         description="Simulation Data:",
         disabled=False,
         layout=layout,
@@ -746,14 +754,12 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
         style=analysis_style,
     )
 
-    tagert_names = simulation_names[:-1]
-    if len(simulation_names) > 1:
-        tagert_names = simulation_names[1:]
+    tagert_names = tuple(data_store.loaded_data) + ("None",)
 
     target_data_selection = Dropdown(
         options=tagert_names + ("None",),
         value="None",
-        description="Data to Compare:",
+        description="Loaded Data:",
         disabled=False,
         layout=layout,
         style=analysis_style,
@@ -762,7 +768,7 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     # This will check the sim plot types dropdown available options
     # for the specific sim name in the simulation_selection dropdown options
     check_sim_plot_types(
-        simulation_names[-1], plot_type_selection, target_data_selection, data
+        last_simulation_data, plot_type_selection, target_data_selection
     )
 
     spectrogram_colormap_selection = Dropdown(
@@ -1119,12 +1125,19 @@ class _VizManager:
             (self.figs_tabs, "selected_index"),
         )
 
-        template_names = list(data_templates.keys())
-        template_names.extend(list(fig_templates.keys()))
+        #template_names = list(data_templates.keys())
+        #template_names.extend(list(fig_templates.keys()))
+        # self.templates_dropdown = Dropdown(
+        #     description="Figure Template:",
+        #     options=template_names,
+        #     value=template_names[0],
+        #     style={"description_width": "28%"},
+        #     layout=Layout(width="70%"),
+        # )
         self.templates_dropdown = Dropdown(
             description="Figure Template:",
-            options=template_names,
-            value=template_names[0],
+            options=[],
+            value=None,
             style={"description_width": "28%"},
             layout=Layout(width="70%"),
         )
@@ -1136,15 +1149,25 @@ class _VizManager:
             style={"button_color": self.viz_layout["theme_color"]},
             layout=self.viz_layout["btn"],
         ).add_class("make-fig-btn")
+        self.make_fig_button.disabled = True
         self.make_fig_button.on_click(self.add_figure)
 
-        self.datasets_dropdown = Dropdown(
-            description="Simulation:",
+        self.viz_tab_simulation_data_dropdown = Dropdown(
+            description="Simulation Data:",
             options=[],
             value=None,
             style={"description_width": "28%"},
             layout=Layout(width="70%"),
         )
+
+        self.viz_tab_loaded_data_dropdown = Dropdown(
+            description="Loaded data:",
+            options=[],
+            value=None,
+            style={"description_width": "28%"},
+            layout=Layout(width="70%"),
+        )
+        self.viz_tab_loaded_data_dropdown.layout.display = "none"
 
         # data
         self.fig_idx = {"idx": 1}
@@ -1158,7 +1181,7 @@ class _VizManager:
             "axes_config_tabs": self.axes_config_tabs,
             "figs_tabs": self.figs_tabs,
             "templates_dropdown": self.templates_dropdown,
-            "dataset_dropdown": self.datasets_dropdown,
+            "dataset_dropdown": self.viz_tab_simulation_data_dropdown,
         }
 
     @property
@@ -1237,7 +1260,8 @@ class _VizManager:
                 VBox(
                     [
                         config_sub_panel,
-                        self.datasets_dropdown,
+                        self.viz_tab_simulation_data_dropdown,
+                        self.viz_tab_loaded_data_dropdown
                     ],
                     layout=Layout(
                         display="flex",
@@ -1282,20 +1306,30 @@ class _VizManager:
 
     def _layout_template_change(self, template_type):
         # check if plot set type requires loaded sim-data
+        # PreReq: The simulatio/loaded data is already defined in the 
+        # viz_tab_simulation_data_dropdown or viz_tab_loaded_data_dropdown
+        # we dont do any additional filter here.
         if _check_template_type_is_data_dependant(template_type.new):
             # Add only simulated data
             # list automatically loops through the keys and appends them
             # or falls back to a list containing a single space string
             sim_names = list(data_store.simulated_data) or [" "]
 
-            self.datasets_dropdown.options = sim_names
-            self.datasets_dropdown.value = sim_names[0]
+            self.viz_tab_simulation_data_dropdown.options = sim_names
+            self.viz_tab_simulation_data_dropdown.value = sim_names[0]
             # show list of simulated to gui dropdown
-            self.datasets_dropdown.layout.visibility = "visible"
+            self.viz_tab_simulation_data_dropdown.layout.display = "flex"
+            self.viz_tab_loaded_data_dropdown.layout.display  = "none"
         else:
             # hide sim-data dropdown if not using a pre-programmed Figure Template (this
             # currently only applies to the "[Blank] Xrow x Ycol" Figure Templates)
-            self.datasets_dropdown.layout.visibility = "hidden"
+            sim_names = list(data_store.loaded_data) or [" "]
+            
+            self.viz_tab_loaded_data_dropdown.options = sim_names
+            self.viz_tab_loaded_data_dropdown.value = sim_names[0]
+            self.viz_tab_simulation_data_dropdown.layout.display = "none"
+            self.viz_tab_loaded_data_dropdown.layout.display = "flex"
+            
 
     @unlink_relink(attribute="figs_config_tab_link")
     def add_figure(self, b=None):
@@ -1358,10 +1392,28 @@ class _VizManager:
     def _simulate_add_fig(self):
         self.make_fig_button.click()
 
-    def _simulate_switch_fig_template(self, template_name):
-        assert template_name in fig_templates.keys() or data_templates.keys(), (
+    ## This function resets the state of the templates names list dropdown
+    def _simulate_switch_fig_template(self, template_name: str):
+        # By default the dropdown is empty. 
+        # Check if we need to populate it
+
+        # A place holder to do -1 operations looking up template name
+        template_names = list(data_templates.keys()) + list(fig_templates.keys())
+        if not self.templates_dropdown.options:
+            self.templates_dropdown.options =  template_names
+
+        assert template_name in template_names, (
             "No such template"
         )
+        
+        if _check_template_type_is_data_dependant(template_name):
+            self.viz_tab_simulation_data_dropdown.layout.display = "flex"
+            self.viz_tab_loaded_data_dropdown.layout.display = "none"
+        else:
+            self.viz_tab_simulation_data_dropdown.layout.display = "none"
+            self.viz_tab_loaded_data_dropdown.layout.display = "flex"
+            
+        
         self.templates_dropdown.value = template_name
 
     def _simulate_delete_figure(self, fig_name):
