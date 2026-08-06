@@ -4690,8 +4690,8 @@ def on_upload_data_change(change, viz_manager, log_out, target_dipole_data_widge
         _template_name = "[Blank] single figure"
 
         # there is no pointer to gui on this function.
-        # so we cant update the gui.opt_target_widgets["target_dipole_data"]
-        # widget diectly using HNNGUI.
+        # so we can't update the gui.opt_target_widgets["target_dipole_data"]
+        # widget directly using HNNGUI.
         # I assume the workaround was done using _viz_manager
         viz_manager.reset_fig_config_tabs(template_name=_template_name)
         _update_target_dipole_data_widget(target_dipole_data_widget)
