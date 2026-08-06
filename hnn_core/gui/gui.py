@@ -4651,15 +4651,15 @@ def get_cell_param_default_value(cell_type_key, param_dict):
     return param_dict[cell_type_key]
 
 
-def _update_target_dipole_data_widget(target_dipole_data_widget):
+def _update_opt_target_dipole_data_widget(opt_target_dipole_data_widget):
     """refresh gui.opt_target_widgets["target_dipole_data"] dropdown using data_store"""
     all_sim_names = list(data_store.all_data_names) or [" "]
-    prior_value = target_dipole_data_widget.value
-    target_dipole_data_widget.options = all_sim_names
-    target_dipole_data_widget.value = prior_value
+    prior_value = opt_target_dipole_data_widget.value
+    opt_target_dipole_data_widget.options = all_sim_names
+    opt_target_dipole_data_widget.value = prior_value
 
 
-def on_upload_data_change(change, viz_manager, log_out, target_dipole_data_widget):
+def on_upload_data_change(change, viz_manager, log_out, opt_target_dipole_data_widget):
     if len(change["owner"].value) == 0:
         return
     # Parsing file information from the 'change' object passed in from
@@ -4694,7 +4694,7 @@ def on_upload_data_change(change, viz_manager, log_out, target_dipole_data_widge
         # widget directly using HNNGUI.
         # I assume the workaround was done using _viz_manager
         viz_manager.reset_fig_config_tabs(template_name=_template_name)
-        _update_target_dipole_data_widget(target_dipole_data_widget)
+        _update_opt_target_dipole_data_widget(opt_target_dipole_data_widget)
 
         viz_manager.add_figure()
         fig_name = _idx2figname(viz_manager.data["fig_idx"]["idx"] - 1)
@@ -4915,7 +4915,7 @@ def run_button_clicked(
     simulations_list_widget,
     cell_parameters_widgets,
     global_gain_textfields,
-    target_dipole_data_widget,
+    opt_target_dipole_data_widget,
 ):
     """Run the simulation and plot outputs."""
     simulation_data = data_store.simulated_data
@@ -4990,7 +4990,7 @@ def run_button_clicked(
                 simulations_list_widget.value = sim_names[0]
 
             viz_manager.reset_fig_config_tabs()
-            _update_target_dipole_data_widget(target_dipole_data_widget)
+            _update_opt_target_dipole_data_widget(opt_target_dipole_data_widget)
 
             # update default visualization params in gui based on widget
             fig_default_params["default_smoothing"] = widget_default_smoothing.value
@@ -5882,7 +5882,7 @@ def run_opt_button_clicked(
     opt_scaling,
     opt_target_widgets,
     opt_solver_widgets,
-    target_dipole_data_widget,
+    opt_target_dipole_data_widget,
 ):
     """Run an Optimization, then re-run its final simulation and plot its outputs.
 
@@ -6263,7 +6263,7 @@ def run_opt_button_clicked(
             # The remainder of this function is just repeating some post-run
             # visualization steps, which are identical to those in `run_button_clicked`
             viz_manager.reset_fig_config_tabs()
-            _update_target_dipole_data_widget(target_dipole_data_widget)
+            _update_opt_target_dipole_data_widget(opt_target_dipole_data_widget)
 
             # update default visualization params in gui based on widget
             fig_default_params["default_smoothing"] = opt_smoothing
