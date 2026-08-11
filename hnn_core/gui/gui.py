@@ -1564,9 +1564,7 @@ class HNNGUI:
             # widget directly using HNNGUI.
             # I assume the workaround was done using _viz_manager
             self.viz_manager.reset_fig_config_tabs(template_name=_template_name)
-            _update_target_dipole_data_widget(
-                self.opt_target_widgets["target_dipole_data"]
-            )
+            self._update_target_dipole_data_widget()
 
             self.viz_manager.add_figure()
             fig_name = _idx2figname(self.viz_manager.data["fig_idx"]["idx"] - 1)
@@ -1579,6 +1577,13 @@ class HNNGUI:
                 preprocessing_config=process_configs,
                 operation="plot",
             )
+
+    def _update_target_dipole_data_widget(self):
+        """refresh gui.opt_target_widgets["target_dipole_data"] dropdown using data_store"""
+        all_loaded_data_names = list(data_store.loaded_data) or [" "]
+        prior_value = self.opt_target_widgets["target_dipole_data"].value
+        self.opt_target_widgets["target_dipole_data"].options = all_loaded_data_names
+        self.opt_target_widgets["target_dipole_data"].value = prior_value
 
     def _delete_single_drive(self, b):
         index = self.drive_accordion.selected_index
@@ -4708,14 +4713,6 @@ def get_cell_param_default_value(cell_type_key, param_dict):
     return param_dict[cell_type_key]
 
 
-def _update_target_dipole_data_widget(target_dipole_data_widget):
-    """refresh gui.opt_target_widgets["target_dipole_data"] dropdown using data_store"""
-    all_sim_names = list(data_store.all_data_names) or [" "]
-    prior_value = target_dipole_data_widget.value
-    target_dipole_data_widget.options = all_sim_names
-    target_dipole_data_widget.value = prior_value
-
-
 def _drive_widget_to_dict(drive, name):
     """Creates a dict of input widget values
 
@@ -4995,7 +4992,6 @@ def run_button_clicked(
                 simulations_list_widget.value = sim_names[0]
 
             viz_manager.reset_fig_config_tabs()
-            _update_target_dipole_data_widget(target_dipole_data_widget)
 
             # update default visualization params in gui based on widget
             fig_default_params["default_smoothing"] = widget_default_smoothing.value
@@ -6268,7 +6264,6 @@ def run_opt_button_clicked(
             # The remainder of this function is just repeating some post-run
             # visualization steps, which are identical to those in `run_button_clicked`
             viz_manager.reset_fig_config_tabs()
-            _update_target_dipole_data_widget(target_dipole_data_widget)
 
             # update default visualization params in gui based on widget
             fig_default_params["default_smoothing"] = opt_smoothing

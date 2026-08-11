@@ -2299,17 +2299,12 @@ def test_data_store_reset_on_gui_reinit(setup_gui):
 
 def test_data_store_shared_singleton_across_modules(setup_gui):
     """gui.py and _viz_manager.py must observe the exact same data_store instance"""
-    ## This import is only nedeed in this scope
-    # import hnn_core.gui._viz_manager as _viz_manager
-
-    # assert _viz_manager.data_store is data_store
-
     gui = setup_gui
     sim_name = "shared_data_store_test"
     gui.widget_simulation_name.value = sim_name
     gui.run_button.click()
 
-    assert sim_name in gui.opt_target_widgets["target_dipole_data"].options
+    assert sim_name in gui.simulation_list_widget.options
     # data written through gui.py is immediately
     # visible to _VizManager's data_store widget updates
     gui.viz_manager.templates_dropdown.value = "Drive-Dipole (2x1)"
