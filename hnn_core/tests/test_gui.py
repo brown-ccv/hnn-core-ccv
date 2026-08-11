@@ -468,10 +468,12 @@ def test_gui_upload_data():
 
     # No data loading for legacy multi-trial data files.
     file3_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/gamma_tutorial/100_trials.txt"  # noqa
-    with pytest.raises(
-        ValueError, match="Data are supposed to have 2 or 4 columns while we have 101."
-    ):
-        gui._simulate_upload_data(file3_url)
+    gui._simulate_upload_data(file3_url)
+    assert any(
+        "Data are supposed to have 2 or 4 columns while we have 101." in entry["text"]
+        for entry in gui._log_out.outputs
+    )
+
     assert len(data_store.loaded_data) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
@@ -2297,17 +2299,13 @@ def test_data_store_reset_on_gui_reinit(setup_gui):
 
 def test_data_store_shared_singleton_across_modules(setup_gui):
     """gui.py and _viz_manager.py must observe the exact same data_store instance"""
-    ## This import is only nedeed in this scope
-    # import hnn_core.gui._viz_manager as _viz_manager
-
-    # assert _viz_manager.data_store is data_store
-
     gui = setup_gui
     sim_name = "shared_data_store_test"
     gui.widget_simulation_name.value = sim_name
     gui.run_button.click()
 
+    assert sim_name in gui.simulation_list_widget.options
     # data written through gui.py is immediately
     # visible to _VizManager's data_store widget updates
-    gui.viz_manager.update_external_data_widget()
-    assert sim_name in gui.opt_target_widgets["target_dipole_data"].options
+    gui.viz_manager.templates_dropdown.value = "Drive-Dipole (2x1)"
+    assert sim_name in gui.viz_manager.datasets_dropdown.value
