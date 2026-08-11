@@ -1430,8 +1430,3 @@ class _VizManager:
                 buttons.children[1].click()
         except Exception:
             raise
-
-
-def _is_simulation(data):
-    """Determines if saved data is a simulation."""
-    return data["net"] is not None

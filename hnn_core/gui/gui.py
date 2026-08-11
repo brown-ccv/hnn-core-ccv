@@ -1281,7 +1281,7 @@ class HNNGUI:
     def _link_callbacks(self):
         """Link callbacks to UI components."""
 
-        def _handle_backend_change(backend_type):
+        def _handle_backend_change_cb(backend_type):
             return handle_backend_change(
                 backend_type.new,
                 self._backend_config_out,
@@ -1289,7 +1289,7 @@ class HNNGUI:
                 self.widget_n_jobs,
             )
 
-        def _add_drive_button_clicked(b):
+        def _add_drive_button_clicked_cb(b):
             location = self.widget_location_selection.value.lower()
             output = self.add_drive_tab_drive_widget(
                 self.widget_drive_type_selection.value,
@@ -1303,7 +1303,7 @@ class HNNGUI:
             )
             return output
 
-        def _delete_drives_clicked(b):
+        def _delete_drives_clicked_cb(b):
             self._drives_out.clear_output()
             self._opt_drives_out.clear_output()
             # black magic: the following does not work
@@ -1317,26 +1317,35 @@ class HNNGUI:
             while len(self.opt_drive_boxes) > 0:
                 self.opt_drive_boxes.pop()
 
-        def _on_upload_connectivity(change):
+        def _on_upload_connectivity_cb(change):
             new_params = self.on_upload_params_change(
                 change, self.layout["drive_textbox"], load_type="connectivity"
             )
             self.params = new_params
 
-        def _on_upload_drives(change):
+        def _on_upload_drives_cb(change):
             _ = self.on_upload_params_change(
                 change, self.layout["drive_textbox"], load_type="drives"
             )
 
-        def _on_upload_data(change):
-            return on_upload_data_change(
-                change,
-                self.viz_manager,
-                self._log_out,
-                self.opt_target_widgets["target_dipole_data"],
-            )
+        def _on_upload_data_cb(change):
+            ## this function should get data and  take care of the state of the widgets
+            # Check state of the widget
+            if not change["owner"].value:
+                return
+            try:
+                self._on_upload_data(file_path=change["new"][0])
+            except Exception:
+                self._simulation_status_bar.value = self._simulation_status_contents[
+                    "failed"
+                ]
+                logger.error(traceback.format_exc())
+                return
+            finally:
+                # Reset the load file widget
+                change["owner"].value = []
 
-        def _run_button_clicked(b):
+        def _run_button_clicked_cb(b):
             return run_button_clicked(
                 self.widget_simulation_name,
                 self._log_out,
@@ -1363,7 +1372,7 @@ class HNNGUI:
                 self.opt_target_widgets["target_dipole_data"],
             )
 
-        def _run_opt_button_clicked(b):
+        def _run_opt_button_clicked_cb(b):
             result = run_opt_button_clicked(
                 self.widget_simulation_name,
                 self._log_out,
@@ -1407,7 +1416,7 @@ class HNNGUI:
                 self._update_opt_history_button()
             return
 
-        def _simulation_list_change(value):
+        def _simulation_list_change_cb(value):
             # Simulation Data
             _simulation_data, file_extension = _serialize_simulation(
                 self._log_out, data_store.simulated_data, self.simulation_list_widget
@@ -1455,12 +1464,12 @@ class HNNGUI:
                 mimetype="application/json",
             )
 
-        def _driver_type_change(value):
+        def _driver_type_change_cb(value):
             self.widget_location_selection.disabled = (
                 True if value.new == "Tonic" else False
             )
 
-        def _cell_type_radio_change(value):
+        def _cell_type_radio_change_cb(value):
             _update_cell_params_vbox(
                 self._cell_params_out,
                 self.cell_parameters_widgets,
@@ -1468,7 +1477,7 @@ class HNNGUI:
                 self.cell_layer_radio_buttons.value,
             )
 
-        def _cell_layer_radio_change(value):
+        def _cell_layer_radio_change_cb(value):
             _update_cell_params_vbox(
                 self._cell_params_out,
                 self.cell_parameters_widgets,
@@ -1476,31 +1485,31 @@ class HNNGUI:
                 value.new,
             )
 
-        def _opt_obj_fun_change(value):
+        def _opt_obj_fun_change_cb(value):
             self._update_opt_target_hbox(value.new)
 
-        def _opt_solver_change(value):
+        def _opt_solver_change_cb(value):
             self._update_opt_solver_hbox(value.new)
 
-        self.widget_backend_selection.observe(_handle_backend_change, "value")
-        self.add_drive_button.on_click(_add_drive_button_clicked)
-        self.delete_drive_button.on_click(_delete_drives_clicked)
-        self.load_connectivity_button.observe(_on_upload_connectivity, names="value")
-        self.load_drives_button.observe(_on_upload_drives, names="value")
-        self.run_button.on_click(_run_button_clicked)
-        self.run_opt_button.on_click(_run_opt_button_clicked)
+        self.widget_backend_selection.observe(_handle_backend_change_cb, "value")
+        self.add_drive_button.on_click(_add_drive_button_clicked_cb)
+        self.delete_drive_button.on_click(_delete_drives_clicked_cb)
+        self.load_connectivity_button.observe(_on_upload_connectivity_cb, names="value")
+        self.load_drives_button.observe(_on_upload_drives_cb, names="value")
+        self.run_button.on_click(_run_button_clicked_cb)
+        self.run_opt_button.on_click(_run_opt_button_clicked_cb)
 
-        self.load_data_button.observe(_on_upload_data, names="value")
-        self.simulation_list_widget.observe(_simulation_list_change, "value")
-        self.widget_drive_type_selection.observe(_driver_type_change, "value")
+        self.load_data_button.observe(_on_upload_data_cb, names="value")
+        self.simulation_list_widget.observe(_simulation_list_change_cb, "value")
+        self.widget_drive_type_selection.observe(_driver_type_change_cb, "value")
 
-        self.cell_type_radio_buttons.observe(_cell_type_radio_change, "value")
-        self.cell_layer_radio_buttons.observe(_cell_layer_radio_change, "value")
+        self.cell_type_radio_buttons.observe(_cell_type_radio_change_cb, "value")
+        self.cell_layer_radio_buttons.observe(_cell_layer_radio_change_cb, "value")
 
         # Many Optimization tab observations, including dual-linking widgets with their
         # equivalent in the Run tab:
-        self.widget_opt_obj_fun.observe(_opt_obj_fun_change, "value")
-        self.widget_opt_solver.observe(_opt_solver_change, "value")
+        self.widget_opt_obj_fun.observe(_opt_obj_fun_change_cb, "value")
+        self.widget_opt_solver.observe(_opt_solver_change_cb, "value")
 
         link(
             (self.widget_opt_tstop, "value"),
@@ -1522,6 +1531,54 @@ class HNNGUI:
             (self.widget_default_scaling, "value"),
             (self.widget_opt_scaling, "value"),
         )
+
+    def _on_upload_data(self, file_path):
+        # Parsing path into filename and extension
+        data_dict = file_path
+        dict_name = data_dict["name"].rsplit(".", 1)
+        data_filename = dict_name[0]
+        file_extension = f".{dict_name[1]}"
+
+        # If data was already loaded return
+        if data_store.loaded_data.get(data_filename) is not None:
+            with self._log_out:
+                logger.error(f"Found existing data: {data_filename}.")
+            return
+
+        # Read the file
+        ext_content = data_dict["content"]
+        ext_content = codecs.decode(ext_content, encoding="utf-8")
+        with self._log_out:
+            # Write loaded data to data object
+            data_store.loaded_data[data_filename] = {
+                "net": None,
+                "dpls": [_read_dipole_txt(io.StringIO(ext_content), file_extension)],
+            }
+            logger.info(f"External data {data_filename} loaded.")
+
+            # Create a dipole plot
+            _template_name = "[Blank] single figure"
+
+            # there is no pointer to gui on this function.
+            # so we can't update the gui.opt_target_widgets["target_dipole_data"]
+            # widget directly using HNNGUI.
+            # I assume the workaround was done using _viz_manager
+            self.viz_manager.reset_fig_config_tabs(template_name=_template_name)
+            _update_target_dipole_data_widget(
+                self.opt_target_widgets["target_dipole_data"]
+            )
+
+            self.viz_manager.add_figure()
+            fig_name = _idx2figname(self.viz_manager.data["fig_idx"]["idx"] - 1)
+            process_configs = {"dipole_smooth": 0, "dipole_scaling": 1}
+            self.viz_manager._simulate_edit_figure(
+                fig_name,
+                ax_name="ax0",
+                simulation_name=data_filename,
+                plot_type="current dipole",
+                preprocessing_config=process_configs,
+                operation="plot",
+            )
 
     def _delete_single_drive(self, b):
         index = self.drive_accordion.selected_index
@@ -4657,58 +4714,6 @@ def _update_target_dipole_data_widget(target_dipole_data_widget):
     prior_value = target_dipole_data_widget.value
     target_dipole_data_widget.options = all_sim_names
     target_dipole_data_widget.value = prior_value
-
-
-def on_upload_data_change(change, viz_manager, log_out, target_dipole_data_widget):
-    if len(change["owner"].value) == 0:
-        return
-    # Parsing file information from the 'change' object passed in from
-    # the upload file widget.
-    data_dict = change["new"][0]
-    dict_name = data_dict["name"].rsplit(".", 1)
-    data_filename = dict_name[0]
-    file_extension = f".{dict_name[1]}"
-
-    # If data was already loaded return
-    if data_store.loaded_data.get(data_filename) is not None:
-        with log_out:
-            logger.error(f"Found existing data: {data_filename}.")
-        return
-
-    # Read the file
-    ext_content = data_dict["content"]
-    ext_content = codecs.decode(ext_content, encoding="utf-8")
-    with log_out:
-        # Write loaded data to data object
-        data_store.loaded_data[data_filename] = {
-            "net": None,
-            "dpls": [_read_dipole_txt(io.StringIO(ext_content), file_extension)],
-        }
-        logger.info(f"External data {data_filename} loaded.")
-
-        # Create a dipole plot
-        _template_name = "[Blank] single figure"
-
-        # there is no pointer to gui on this function.
-        # so we can't update the gui.opt_target_widgets["target_dipole_data"]
-        # widget directly using HNNGUI.
-        # I assume the workaround was done using _viz_manager
-        viz_manager.reset_fig_config_tabs(template_name=_template_name)
-        _update_target_dipole_data_widget(target_dipole_data_widget)
-
-        viz_manager.add_figure()
-        fig_name = _idx2figname(viz_manager.data["fig_idx"]["idx"] - 1)
-        process_configs = {"dipole_smooth": 0, "dipole_scaling": 1}
-        viz_manager._simulate_edit_figure(
-            fig_name,
-            ax_name="ax0",
-            simulation_name=data_filename,
-            plot_type="current dipole",
-            preprocessing_config=process_configs,
-            operation="plot",
-        )
-        # Reset the load file widget
-        change["owner"].value = []
 
 
 def _drive_widget_to_dict(drive, name):

@@ -468,10 +468,12 @@ def test_gui_upload_data():
 
     # No data loading for legacy multi-trial data files.
     file3_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/gamma_tutorial/100_trials.txt"  # noqa
-    with pytest.raises(
-        ValueError, match="Data are supposed to have 2 or 4 columns while we have 101."
-    ):
-        gui._simulate_upload_data(file3_url)
+    gui._simulate_upload_data(file3_url)
+    assert any(
+        "Data are supposed to have 2 or 4 columns while we have 101." in entry["text"]
+        for entry in gui._log_out.outputs
+    )
+
     assert len(data_store.loaded_data) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
