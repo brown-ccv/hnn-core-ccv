@@ -159,9 +159,9 @@ def check_sim_plot_types(new_sim_name, plot_type_selection, target_selection):
             pt for pt in _plot_types if pt not in _ext_data_disabled_plot_types
         ]
         # deal with target data
-        all_possible_targets = list(data_store.loaded_data_names)
-        all_possible_targets.remove(new_sim_name)
-        target_selection.options = all_possible_targets + ["None"]
+        # all_possible_targets = list(data_store.loaded_data_names)
+        # all_possible_targets.remove(new_sim_name)
+        # target_selection.options = all_possible_targets + ["None"]
         target_selection.value = "None"
     else:
         plot_type_selection.options = _plot_types
@@ -764,7 +764,7 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
         None,
     )
     target_data_selection = Dropdown(
-        options=tagert_names + ("None",),
+        options=tagert_names,
         value="None",
         description="Loaded Data:",
         disabled=False,
@@ -1450,8 +1450,19 @@ class _VizManager:
             ax_idx = ax_titles.index(ax_name)
             ax_control_tabs.selected_index = ax_idx
 
+            if simulation_name in data_store.simulated_data_names:
+                # Simulation data widget
+                widget_index = 1
+            elif simulation_name in data_store.loaded_data_names:
+                # Loaded data widget
+                widget_index = 4
+            else:
+                raise  RuntimeError(
+                    f"'{simulation_name}' is not in simulated_data_names nor loaded_data_names"
+                )
+
             # Select the simulation
-            simulation_selector = ax_control_tabs.children[ax_idx].children[1]
+            simulation_selector = ax_control_tabs.children[ax_idx].children[widget_index]
             simulation_selector.value = simulation_name
 
             # Select the plot type

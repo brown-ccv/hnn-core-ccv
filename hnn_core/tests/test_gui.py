@@ -2309,3 +2309,17 @@ def test_data_store_shared_singleton_across_modules(setup_gui):
     # visible to _VizManager's data_store widget updates
     gui.viz_manager.templates_dropdown.value = "Drive-Dipole (2x1)"
     assert sim_name in gui.viz_manager.viz_tab_simulation_data_dropdown.value
+
+def test_viz_tab_dropdown(setup_gui):
+    gui = setup_gui
+    sim_name = "shared_data_store_test"
+    gui.widget_simulation_name.value = sim_name
+    gui.run_button.click()
+
+    file_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/yes_trial_S1_ERP_all_avg.txt"  # noqa
+    gui._simulate_upload_data(file_url)
+
+    assert sim_name in gui.viz_manager.viz_tab_simulation_data_dropdown.value
+    assert len(gui.viz_manager.viz_tab_simulation_data_dropdown.options) == 1
+    assert len(gui.viz_manager.viz_tab_loaded_data_dropdown.options) == 1
+
