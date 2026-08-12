@@ -862,7 +862,7 @@ def test_gui_add_data_dependent_figure(setup_gui):
     n_fig = 1
     for template_name, num_axes in template_names:
         gui.viz_manager.templates_dropdown.value = template_name
-        assert len(gui.viz_manager.datasets_dropdown.options) == 1
+        assert len(gui.viz_manager.viz_tab_simulation_data_dropdown.options) == 1
         gui.viz_manager.make_fig_button.click()
         # Check  figs have data on their axis
         for ax in range(num_axes):
@@ -892,7 +892,7 @@ def test_gui_edit_figure(setup_gui):
 
         axes_config = axes_config_tabs.children[-1].children[1]
         simulation_selection = axes_config.children[0].children[1]
-        assert simulation_selection.options == tuple(sim_names[:n_figs])
+        assert simulation_selection.options == tuple(sim_names[:n_figs]) + ("None",)
     plt.close("all")
 
 
@@ -1409,7 +1409,7 @@ def test_fig_tabs_dropdown_lists(setup_gui):
             # Check that dropdown has been updated with all simulation names
             assert all(sim in sim_names for sim in [sim_name, sim_name2])
 
-            assert ax_control.children[4].description == "Data to Compare:"
+            assert ax_control.children[4].description == "Loaded Data:"
 
             # Check the data to compare dropdown is enable for
             # non "input histograms" plot type
@@ -2308,4 +2308,4 @@ def test_data_store_shared_singleton_across_modules(setup_gui):
     # data written through gui.py is immediately
     # visible to _VizManager's data_store widget updates
     gui.viz_manager.templates_dropdown.value = "Drive-Dipole (2x1)"
-    assert sim_name in gui.viz_manager.datasets_dropdown.value
+    assert sim_name in gui.viz_manager.viz_tab_simulation_data_dropdown.value

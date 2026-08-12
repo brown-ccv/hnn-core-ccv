@@ -158,13 +158,13 @@ def check_sim_plot_types(new_sim_name, plot_type_selection, target_selection):
         plot_type_selection.options = [
             pt for pt in _plot_types if pt not in _ext_data_disabled_plot_types
         ]
+        # deal with target data
+        all_possible_targets = list(data_store.loaded_data_names)
+        all_possible_targets.remove(new_sim_name)
+        target_selection.options = all_possible_targets + ["None"]
+        target_selection.value = "None"
     else:
         plot_type_selection.options = _plot_types
-    # deal with target data
-    all_possible_targets = list(data_store.all_data_names)
-    all_possible_targets.remove(new_sim_name)
-    target_selection.options = all_possible_targets + ["None"]
-    target_selection.value = "None"
 
 
 def _check_template_type_is_data_dependant(template_name):
@@ -755,7 +755,14 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     )
 
     tagert_names = tuple(data_store.loaded_data) + ("None",)
-
+    last_target_data = next(
+        (
+            target_name
+            for target_name in reversed(tagert_names)
+            if target_name != "None"
+        ),
+        None,
+    )
     target_data_selection = Dropdown(
         options=tagert_names + ("None",),
         value="None",
@@ -767,9 +774,7 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
 
     # This will check the sim plot types dropdown available options
     # for the specific sim name in the simulation_selection dropdown options
-    check_sim_plot_types(
-        last_simulation_data, plot_type_selection, target_data_selection
-    )
+    check_sim_plot_types(last_target_data, plot_type_selection, target_data_selection)
 
     spectrogram_colormap_selection = Dropdown(
         description="Spectrogram Colormap:",
@@ -854,7 +859,7 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
 
     def _on_sim_data_change(new_sim_name):
         return check_sim_plot_types(
-            new_sim_name.new, plot_type_selection, target_data_selection, data
+            new_sim_name.new, plot_type_selection, target_data_selection
         )
 
     def _on_target_comparison_change(new_target_name):
@@ -977,7 +982,7 @@ def _add_axes_controls(widgets, data, fig_default_params, fig, axd):
         _get_ax_control(
             widgets, data, fig_default_params, fig_idx=fig_idx, fig=fig, ax=ax
         )
-        for ax_key, ax in axd.items()
+        for _, ax in axd.items()
     ]
     controls.children = children
     for i in range(len(children)):
