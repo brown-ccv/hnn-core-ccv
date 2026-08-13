@@ -506,7 +506,6 @@ def _avg_dipole_check(dpls):
         dpl = average_dipoles(dpls)
     return dpl
 
-
 def _plot_on_axes(
     button,
     simulations_widget,
@@ -527,6 +526,7 @@ def _plot_on_axes(
     fig,
     ax,
     existing_plots,
+    plot_context,
 ):
     """Plotting different types of data on the given axes.
 
@@ -571,7 +571,16 @@ def _plot_on_axes(
     existing_plots : ipywidgets.VBox
         A VBox widget that contains all the existing plots.
     """
-    sim_name = simulations_widget.value
+    sim_name = (
+        data_widget.value if plot_context.get("is_loaded_data") else simulations_widget.value
+    )
+
+    ## It must look up both run_data and laoded_data dicts for sim_name
+    ## Maybe throw exception if there's no simulation?
+    single_simulation = data_store.simulated_data.get(
+        sim_name
+    ) or data_store.loaded_data.get(sim_name)
+
     plot_type = widgets_plot_type.value
     # disable 'add plots' button for types that do not support overlay
     if plot_type in _no_overlay_plot_types:
@@ -580,11 +589,7 @@ def _plot_on_axes(
     # freeze plot type
     widgets_plot_type.disabled = True
 
-    ## It must look up both run_data and laoded_data dicts for sim_name
-    ## Maybe throw exception if there's no simulation?
-    single_simulation = data_store.simulated_data.get(
-        sim_name
-    ) or data_store.loaded_data.get(sim_name)
+    
     simulation_plot_config = {
         "dipole_scaling": dipole_scaling.value,
         "dipole_smooth": dipole_smooth.value,
@@ -601,7 +606,10 @@ def _plot_on_axes(
 
     # If target_simulations is not None and we are plotting a dipole,
     # we need to plot the target dipole as well.
-    if data_widget.value in data_store.all_data_names and plot_type == "current dipole":
+    if  ( not plot_context.get("is_loaded_data")
+         and data_widget.value in data_store.loaded_data_names
+         and plot_type == "current dipole"):
+        
         target_sim_name = data_widget.value
         target_sim = data_store.simulated_data.get(
             target_sim_name
@@ -853,8 +861,10 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
     )
 
     existing_plots = VBox([]).add_class("existing-plots")
+    plot_context = {}
 
     plot_button = Button(description="Add plot")
+    plot_button.plot_context = plot_context
     clear_button = Button(description="Clear axis")
 
     def _on_sim_data_change(new_sim_name):
@@ -907,6 +917,7 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
             fig=fig,
             ax=ax,
             existing_plots=existing_plots,
+            plot_context=plot_context,
         )
     )
 
@@ -1450,12 +1461,18 @@ class _VizManager:
             ax_idx = ax_titles.index(ax_name)
             ax_control_tabs.selected_index = ax_idx
 
+            buttons = ax_control_tabs.children[ax_idx].children[-2]
+            plot_context = buttons.children[0].plot_context
+
+
             if simulation_name in data_store.simulated_data_names:
                 # Simulation data widget
                 widget_index = 1
+                plot_context["is_loaded_data"] = False
             elif simulation_name in data_store.loaded_data_names:
                 # Loaded data widget
                 widget_index = 4
+                plot_context["is_loaded_data"] = True
             else:
                 raise  RuntimeError(
                     f"'{simulation_name}' is not in simulated_data_names nor loaded_data_names"
@@ -1488,7 +1505,6 @@ class _VizManager:
                 conf_widget = ax_control_tabs.children[ax_idx].children[idx]
                 conf_widget.value = conf_val
 
-            buttons = ax_control_tabs.children[ax_idx].children[-2]
             if operation == "plot":
                 buttons.children[0].click()
             elif operation == "clear":
