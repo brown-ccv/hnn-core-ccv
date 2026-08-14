@@ -1321,22 +1321,16 @@ class _VizManager:
             # Add only simulated data
             # list automatically loops through the keys and appends them
             # or falls back to a list containing a single space string
-            sim_names = list(data_store.simulated_data) or [" "]
-
-            self.viz_tab_simulation_data_dropdown.options = sim_names
-            self.viz_tab_simulation_data_dropdown.value = sim_names[0]
             # show list of simulated to gui dropdown
             self.viz_tab_simulation_data_dropdown.layout.display = "flex"
             self.viz_tab_loaded_data_dropdown.layout.display = "none"
+            self.make_fig_button.disabled = not data_store.simulated_data
         else:
             # hide sim-data dropdown if not using a pre-programmed Figure Template (this
             # currently only applies to the "[Blank] Xrow x Ycol" Figure Templates)
-            sim_names = list(data_store.loaded_data) or [" "]
-
-            self.viz_tab_loaded_data_dropdown.options = sim_names
-            self.viz_tab_loaded_data_dropdown.value = sim_names[0]
             self.viz_tab_simulation_data_dropdown.layout.display = "none"
             self.viz_tab_loaded_data_dropdown.layout.display = "flex"
+            self.make_fig_button.disabled = not data_store.loaded_data
 
     @unlink_relink(attribute="figs_config_tab_link")
     def add_figure(self, b=None):
@@ -1402,6 +1396,15 @@ class _VizManager:
 
     ## This function resets the state of the templates names list dropdown
     def _simulate_switch_fig_template(self, template_name: str):
+
+        ## Refresh vizualisation tab's simulation_data and loaded_data dropdowns
+        for dropdown, names in (
+            (self.viz_tab_simulation_data_dropdown, list(data_store.simulated_data)),
+            (self.viz_tab_loaded_data_dropdown, list(data_store.loaded_data)),
+        ):
+            dropdown.options = names or [" "]
+            dropdown.value = dropdown.options[0]
+
         # By default the dropdown is empty.
         # Check if we need to populate it
 
