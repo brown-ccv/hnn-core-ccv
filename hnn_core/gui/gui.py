@@ -4996,7 +4996,7 @@ def run_button_clicked(
                 simulations_list_widget.value = sim_names[0]
 
             viz_manager.last_action = "run_simulation"
-            viz_manager.reset_fig_config_tabs(template_name="Drive-Dipole (2x1)")
+            viz_manager.reset_fig_config_tabs()
 
             # update default visualization params in gui based on widget
             fig_default_params["default_smoothing"] = widget_default_smoothing.value
@@ -6270,7 +6270,7 @@ def run_opt_button_clicked(
             # --------------------------------------------------------------------------
             # The remainder of this function is just repeating some post-run
             # visualization steps, which are identical to those in `run_button_clicked`
-            viz_manager.reset_fig_config_tabs(template_name="Drive-Dipole (2x1)")
+            viz_manager.reset_fig_config_tabs()
 
             # update default visualization params in gui based on widget
             fig_default_params["default_smoothing"] = opt_smoothing
