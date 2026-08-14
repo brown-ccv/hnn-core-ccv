@@ -1330,7 +1330,7 @@ class _VizManager:
 
             self.viz_tab_simulation_data_dropdown.layout.display = "flex"
             self.viz_tab_loaded_data_dropdown.layout.display = "none"
-            
+
         elif template_name == "Loaded Data":
             # Repopulateviz_tab_loaded_data_dropdown and hide simulation data dropdown
             loaded_data_names = list(data_store.loaded_data) or [" "]
@@ -1409,18 +1409,18 @@ class _VizManager:
     ## This function resets the state of the templates names list dropdown
     def _simulate_switch_fig_template(self, template_name: str):
         is_loaded_data_entry = template_name == "Loaded Data"
-        assert  (
+        assert (
             template_name in fig_templates
             or template_name in data_templates
             or is_loaded_data_entry
-        ),"No such template"
-        
+        ), "No such template"
+
         self.viz_tab_simulation_data_dropdown.layout.display = (
-            "none" if is_loaded_data_entry else  "flex"
-            )
+            "none" if is_loaded_data_entry else "flex"
+        )
         self.viz_tab_loaded_data_dropdown.layout.display = (
-            "flex" if is_loaded_data_entry else  "none"
-            )
+            "flex" if is_loaded_data_entry else "none"
+        )
 
         # Calls viz_manager._layout_template_change
         self.templates_dropdown.value = template_name
