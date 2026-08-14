@@ -2310,8 +2310,9 @@ def test_data_store_shared_singleton_across_modules(setup_gui):
     gui.viz_manager.templates_dropdown.value = "Drive-Dipole (2x1)"
     assert sim_name in gui.viz_manager.viz_tab_simulation_data_dropdown.value
 
+
 def test_viz_tab_dropdown(setup_gui):
-    """Test switch template values in visualization tabs shows/hides the 
+    """Test switch template values in visualization tabs shows/hides the
     simualtion and loaded data dropdowns"""
     gui = setup_gui
     sim_name_1 = "default1"
@@ -2339,10 +2340,11 @@ def test_viz_tab_dropdown(setup_gui):
     assert gui.viz_manager.viz_tab_loaded_data_dropdown.layout.display == "none"
     assert gui.viz_manager.viz_tab_simulation_data_dropdown.layout.display == "flex"
 
+
 def test_viz_tab_ax_control_dropdowns(setup_gui):
-    """ Test dropdowns in ax controls :
+    """Test dropdowns in ax controls :
     Simulation Data Dropdown only show simualted data
-    Loaded Data only show loaded data """
+    Loaded Data only show loaded data"""
 
     gui = setup_gui
 
@@ -2368,5 +2370,25 @@ def test_viz_tab_ax_control_dropdowns(setup_gui):
             assert loaded_dropdown.description == "Loaded Data:"
             assert loaded_name in loaded_dropdown.options
             assert sim_name not in loaded_dropdown.options
+
+    plt.close("all")
+
+
+def test_fig_contain_data(setup_gui):
+    """Check figures are not empty white canvas after run simulation or upload data"""
+    gui = setup_gui
+
+    # after running a simulation, the default fig's axes should have data
+    gui.run_button.click()
+    default_fig = gui.viz_manager.figs[1]
+    for ax in default_fig.axes:
+        assert ax.has_data()
+
+    # after uploading data, the auto-generated fig should also have data
+    file_path = assets_path / "test_default.csv"
+    gui._simulate_upload_data(file_path)
+    loaded_fig_idx = gui.viz_manager.fig_idx["idx"] - 1
+    loaded_fig = gui.viz_manager.figs[loaded_fig_idx]
+    assert loaded_fig.axes[0].has_data()
 
     plt.close("all")

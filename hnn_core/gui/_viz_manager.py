@@ -506,6 +506,7 @@ def _avg_dipole_check(dpls):
         dpl = average_dipoles(dpls)
     return dpl
 
+
 def _plot_on_axes(
     button,
     simulations_widget,
@@ -572,7 +573,9 @@ def _plot_on_axes(
         A VBox widget that contains all the existing plots.
     """
     sim_name = (
-        data_widget.value if plot_context.get("is_loaded_data") else simulations_widget.value
+        data_widget.value
+        if plot_context.get("is_loaded_data")
+        else simulations_widget.value
     )
 
     ## It must look up both run_data and laoded_data dicts for sim_name
@@ -589,7 +592,6 @@ def _plot_on_axes(
     # freeze plot type
     widgets_plot_type.disabled = True
 
-    
     simulation_plot_config = {
         "dipole_scaling": dipole_scaling.value,
         "dipole_smooth": dipole_smooth.value,
@@ -606,10 +608,11 @@ def _plot_on_axes(
 
     # If target_simulations is not None and we are plotting a dipole,
     # we need to plot the target dipole as well.
-    if  ( not plot_context.get("is_loaded_data")
-         and data_widget.value in data_store.loaded_data_names
-         and plot_type == "current dipole"):
-        
+    if (
+        not plot_context.get("is_loaded_data")
+        and data_widget.value in data_store.loaded_data_names
+        and plot_type == "current dipole"
+    ):
         target_sim_name = data_widget.value
         target_sim = data_store.simulated_data.get(
             target_sim_name
@@ -782,12 +785,14 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_acti
 
     # This will check the sim plot types dropdown available options
     # for the specific sim name in the simulation_selection dropdown options
-    if ui_action=="run_simulation":
-        check_sim_plot_types(last_simulation_data, plot_type_selection, target_data_selection)
-    elif ui_action=="upload_data":
-        check_sim_plot_types(last_target_data, plot_type_selection, target_data_selection)
-
-    
+    if ui_action == "run_simulation":
+        check_sim_plot_types(
+            last_simulation_data, plot_type_selection, target_data_selection
+        )
+    elif ui_action == "upload_data":
+        check_sim_plot_types(
+            last_target_data, plot_type_selection, target_data_selection
+        )
 
     spectrogram_colormap_selection = Dropdown(
         description="Spectrogram Colormap:",
@@ -996,8 +1001,13 @@ def _add_axes_controls(widgets, data, fig_default_params, fig, axd, ui_action):
     controls = Tab()
     children = [
         _get_ax_control(
-            widgets, data, fig_default_params, fig_idx=fig_idx, fig=fig, ax=ax,
-            ui_action=ui_action
+            widgets,
+            data,
+            fig_default_params,
+            fig_idx=fig_idx,
+            fig=fig,
+            ax=ax,
+            ui_action=ui_action,
         )
         for _, ax in axd.items()
     ]
@@ -1023,8 +1033,14 @@ def _add_axes_controls(widgets, data, fig_default_params, fig, axd, ui_action):
 
 
 def _add_figure(
-    b, widgets, data, fig_default_params, template_type, scale=0.95, dpi=96,
-    ui_action=""
+    b,
+    widgets,
+    data,
+    fig_default_params,
+    template_type,
+    scale=0.95,
+    dpi=96,
+    ui_action="",
 ):
     fig_idx = data["fig_idx"]["idx"]
 
@@ -1066,7 +1082,9 @@ def _add_figure(
         else:
             display(fig.canvas)
 
-    _add_axes_controls(widgets, data, fig_default_params, fig=fig, axd=axd,ui_action=ui_action)
+    _add_axes_controls(
+        widgets, data, fig_default_params, fig=fig, axd=axd, ui_action=ui_action
+    )
 
     data["figs"][fig_idx] = fig
     widgets["figs_tabs"].selected_index = n_tabs
@@ -1212,7 +1230,7 @@ class _VizManager:
 
     def reset_fig_config_tabs(self, template_name=None):
         """Reset the figure config tabs with most recent simulation data."""
-        #simulation_names = tuple(data_store.all_data_names)
+        # simulation_names = tuple(data_store.all_data_names)
 
         for tab in self.axes_config_tabs.children:
             controls = tab.children[1]
@@ -1222,19 +1240,25 @@ class _VizManager:
                 # Note that we need to save the previous value prior to resetting the
                 # options, because resetting the options also resets the value.
                 prev_sim = simulation_data_selection.value
-                simulation_data_selection.options = list(data_store.simulated_data_names) + ["None"]
+                simulation_data_selection.options = list(
+                    data_store.simulated_data_names
+                ) + ["None"]
                 simulation_data_selection.value = (
                     prev_sim if prev_sim in data_store.simulated_data_names else "None"
                 )
-                
+
                 # Update the options for the Loaded data dropdown
                 simulation_to_compare = ax_control.children[4]
                 # Again, note that we need to save the previous value prior to resetting
                 # the options, because resetting the options also resets the value.
                 prev_target = simulation_to_compare.value
-                simulation_to_compare.options = list(data_store.loaded_data_names) + ["None"]
+                simulation_to_compare.options = list(data_store.loaded_data_names) + [
+                    "None"
+                ]
                 simulation_to_compare.value = (
-                    prev_target if prev_target in data_store.loaded_data_names else "None"
+                    prev_target
+                    if prev_target in data_store.loaded_data_names
+                    else "None"
                 )
 
         # recover the default layout
@@ -1346,7 +1370,7 @@ class _VizManager:
             template_type,
             scale=0.97,
             dpi=self.viz_layout["dpi"],
-            ui_action=self.last_action
+            ui_action=self.last_action,
         )
 
         # Plot data if it is a data-dependent template
@@ -1480,12 +1504,14 @@ class _VizManager:
                 widget_index = 4
                 plot_context["is_loaded_data"] = True
             else:
-                raise  RuntimeError(
+                raise RuntimeError(
                     f"'{simulation_name}' is not in simulated_data_names nor loaded_data_names"
                 )
 
             # Select the simulation
-            simulation_selector = ax_control_tabs.children[ax_idx].children[widget_index]
+            simulation_selector = ax_control_tabs.children[ax_idx].children[
+                widget_index
+            ]
             simulation_selector.value = simulation_name
 
             # Select the plot type

@@ -5024,7 +5024,6 @@ def run_button_clicked(
             viz_manager.last_action = ""
 
 
-
 def _update_cell_params_vbox(
     cell_type_out, cell_parameters_list, cell_type, cell_layer
 ):
