@@ -2311,15 +2311,62 @@ def test_data_store_shared_singleton_across_modules(setup_gui):
     assert sim_name in gui.viz_manager.viz_tab_simulation_data_dropdown.value
 
 def test_viz_tab_dropdown(setup_gui):
+    """Test switch template values in visualization tabs shows/hides the 
+    simualtion and loaded data dropdowns"""
     gui = setup_gui
-    sim_name = "shared_data_store_test"
+    sim_name_1 = "default1"
+    gui.widget_simulation_name.value = sim_name_1
+    gui.run_button.click()
+
+    sim_name_2 = "default1"
+    gui.widget_simulation_name.value = sim_name_2
+    gui.run_button.click()
+    file_path = assets_path / "test_default.csv"
+    gui._simulate_upload_data(file_path)
+
+    assert sim_name_1 in gui.viz_manager.viz_tab_simulation_data_dropdown.options
+    assert sim_name_2 in gui.viz_manager.viz_tab_simulation_data_dropdown.options
+    assert len(gui.viz_manager.viz_tab_simulation_data_dropdown.options) == 2
+
+    assert sim_name_2 in gui.viz_manager.viz_tab_loaded_data_dropdown.options
+    assert len(gui.viz_manager.viz_tab_loaded_data_dropdown.options) == 1
+
+    gui.viz_manager.templates_dropdown.value = "[Blank] 2row x 1col (1:3)"
+    assert gui.viz_manager.viz_tab_simulation_data_dropdown.layout.display == "none"
+    assert gui.viz_manager.viz_tab_loaded_data_dropdown.layout.display == "flex"
+
+    gui.viz_manager.templates_dropdown.value = "Drive-Dipole (2x1)"
+    assert gui.viz_manager.viz_tab_loaded_data_dropdown.layout.display == "none"
+    assert gui.viz_manager.viz_tab_simulation_data_dropdown.layout.display == "flex"
+
+def test_viz_tab_ax_control_dropdowns(setup_gui):
+    """ Test dropdowns in ax controls :
+    Simulation Data Dropdown only show simualted data
+    Loaded Data only show loaded data """
+
+    gui = setup_gui
+
+    sim_name = "sim1"
     gui.widget_simulation_name.value = sim_name
     gui.run_button.click()
 
-    file_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/yes_trial_S1_ERP_all_avg.txt"  # noqa
-    gui._simulate_upload_data(file_url)
+    loaded_name = "test_default"
+    file_path = assets_path / "test_default.csv"
+    gui._simulate_upload_data(file_path)
 
-    assert sim_name in gui.viz_manager.viz_tab_simulation_data_dropdown.value
-    assert len(gui.viz_manager.viz_tab_simulation_data_dropdown.options) == 1
-    assert len(gui.viz_manager.viz_tab_loaded_data_dropdown.options) == 1
+    viz_tabs = gui.viz_manager.axes_config_tabs.children
+    for tab in viz_tabs:
+        controls = tab.children[1]
+        for ax_control in controls.children:
+            simulation_dropdown = ax_control.children[1]
+            loaded_dropdown = ax_control.children[4]
 
+            assert simulation_dropdown.description == "Simulation Data:"
+            assert sim_name in simulation_dropdown.options
+            assert loaded_name not in simulation_dropdown.options
+
+            assert loaded_dropdown.description == "Loaded Data:"
+            assert loaded_name in loaded_dropdown.options
+            assert sim_name not in loaded_dropdown.options
+
+    plt.close("all")

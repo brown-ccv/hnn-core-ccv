@@ -725,7 +725,7 @@ def _clear_axis(
         _dynamic_rerender(fig)
 
 
-def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
+def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_action):
     analysis_style = {"description_width": "200px"}
     layout = Layout(width="98%")
 
@@ -782,7 +782,12 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax):
 
     # This will check the sim plot types dropdown available options
     # for the specific sim name in the simulation_selection dropdown options
-    check_sim_plot_types(last_target_data, plot_type_selection, target_data_selection)
+    if ui_action=="run_simulation":
+        check_sim_plot_types(last_simulation_data, plot_type_selection, target_data_selection)
+    elif ui_action=="upload_data":
+        check_sim_plot_types(last_target_data, plot_type_selection, target_data_selection)
+
+    
 
     spectrogram_colormap_selection = Dropdown(
         description="Spectrogram Colormap:",
@@ -985,13 +990,14 @@ def _close_figure(b, widgets, data, fig_idx):
                     display(_fig_placeholder)
 
 
-def _add_axes_controls(widgets, data, fig_default_params, fig, axd):
+def _add_axes_controls(widgets, data, fig_default_params, fig, axd, ui_action):
     fig_idx = data["fig_idx"]["idx"]
 
     controls = Tab()
     children = [
         _get_ax_control(
-            widgets, data, fig_default_params, fig_idx=fig_idx, fig=fig, ax=ax
+            widgets, data, fig_default_params, fig_idx=fig_idx, fig=fig, ax=ax,
+            ui_action=ui_action
         )
         for _, ax in axd.items()
     ]
@@ -1017,7 +1023,8 @@ def _add_axes_controls(widgets, data, fig_default_params, fig, axd):
 
 
 def _add_figure(
-    b, widgets, data, fig_default_params, template_type, scale=0.95, dpi=96
+    b, widgets, data, fig_default_params, template_type, scale=0.95, dpi=96,
+    ui_action=""
 ):
     fig_idx = data["fig_idx"]["idx"]
 
@@ -1059,7 +1066,7 @@ def _add_figure(
         else:
             display(fig.canvas)
 
-    _add_axes_controls(widgets, data, fig_default_params, fig=fig, axd=axd)
+    _add_axes_controls(widgets, data, fig_default_params, fig=fig, axd=axd,ui_action=ui_action)
 
     data["figs"][fig_idx] = fig
     widgets["figs_tabs"].selected_index = n_tabs
@@ -1141,15 +1148,6 @@ class _VizManager:
             (self.figs_tabs, "selected_index"),
         )
 
-        # template_names = list(data_templates.keys())
-        # template_names.extend(list(fig_templates.keys()))
-        # self.templates_dropdown = Dropdown(
-        #     description="Figure Template:",
-        #     options=template_names,
-        #     value=template_names[0],
-        #     style={"description_width": "28%"},
-        #     layout=Layout(width="70%"),
-        # )
         self.templates_dropdown = Dropdown(
             description="Figure Template:",
             options=[],
@@ -1189,6 +1187,7 @@ class _VizManager:
         self.fig_idx = {"idx": 1}
         self.figs = {}
         # self._simulation_store = data_store.loaded_data
+        self.last_action = ""
 
     @property
     def widgets(self):
@@ -1213,7 +1212,7 @@ class _VizManager:
 
     def reset_fig_config_tabs(self, template_name=None):
         """Reset the figure config tabs with most recent simulation data."""
-        simulation_names = tuple(data_store.all_data_names)
+        #simulation_names = tuple(data_store.all_data_names)
 
         for tab in self.axes_config_tabs.children:
             controls = tab.children[1]
@@ -1223,18 +1222,19 @@ class _VizManager:
                 # Note that we need to save the previous value prior to resetting the
                 # options, because resetting the options also resets the value.
                 prev_sim = simulation_data_selection.value
-                simulation_data_selection.options = simulation_names
-                if prev_sim in simulation_names:
-                    simulation_data_selection.value = prev_sim
-
-                # Update the options for the data to compare dropdown
+                simulation_data_selection.options = list(data_store.simulated_data_names) + ["None"]
+                simulation_data_selection.value = (
+                    prev_sim if prev_sim in data_store.simulated_data_names else "None"
+                )
+                
+                # Update the options for the Loaded data dropdown
                 simulation_to_compare = ax_control.children[4]
                 # Again, note that we need to save the previous value prior to resetting
                 # the options, because resetting the options also resets the value.
                 prev_target = simulation_to_compare.value
-                simulation_to_compare.options = list(simulation_names) + ["None"]
+                simulation_to_compare.options = list(data_store.loaded_data_names) + ["None"]
                 simulation_to_compare.value = (
-                    prev_target if prev_target in simulation_names else "None"
+                    prev_target if prev_target in data_store.loaded_data_names else "None"
                 )
 
         # recover the default layout
@@ -1346,6 +1346,7 @@ class _VizManager:
             template_type,
             scale=0.97,
             dpi=self.viz_layout["dpi"],
+            ui_action=self.last_action
         )
 
         # Plot data if it is a data-dependent template
@@ -1464,8 +1465,13 @@ class _VizManager:
             buttons = ax_control_tabs.children[ax_idx].children[-2]
             plot_context = buttons.children[0].plot_context
 
-
-            if simulation_name in data_store.simulated_data_names:
+            if self.last_action == "upload_data":
+                widget_index = 4
+                plot_context["is_loaded_data"] = True
+            elif self.last_action == "run_simulation":
+                widget_index = 1
+                plot_context["is_loaded_data"] = False
+            elif simulation_name in data_store.simulated_data_names:
                 # Simulation data widget
                 widget_index = 1
                 plot_context["is_loaded_data"] = False

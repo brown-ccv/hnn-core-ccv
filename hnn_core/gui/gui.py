@@ -1559,6 +1559,9 @@ class HNNGUI:
             # Create a dipole plot
             _template_name = "[Blank] single figure"
 
+            # Keep track of this action
+            self.viz_manager.last_action = "upload_data"
+
             # there is no pointer to gui on this function.
             # so we can't update the gui.opt_target_widgets["target_dipole_data"]
             # widget directly using HNNGUI.
@@ -1577,6 +1580,7 @@ class HNNGUI:
                 preprocessing_config=process_configs,
                 operation="plot",
             )
+            self.viz_manager.last_action = ""
 
     def _update_target_dipole_data_widget(self):
         """refresh gui.opt_target_widgets["target_dipole_data"] dropdown using data_store"""
@@ -4991,6 +4995,7 @@ def run_button_clicked(
                 simulations_list_widget.options = sim_names
                 simulations_list_widget.value = sim_names[0]
 
+            viz_manager.last_action = "run_simulation"
             viz_manager.reset_fig_config_tabs(template_name="Drive-Dipole (2x1)")
 
             # update default visualization params in gui based on widget
@@ -5015,6 +5020,9 @@ def run_button_clicked(
             simulation_status_bar.value = simulation_status_contents["failed"]
             logger.error(traceback.format_exc())
             return
+        finally:
+            viz_manager.last_action = ""
+
 
 
 def _update_cell_params_vbox(
