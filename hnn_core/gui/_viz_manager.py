@@ -765,17 +765,13 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_acti
         style=analysis_style,
     )
 
-    tagert_names = tuple(data_store.loaded_data) + ("None",)
+    taget_names = tuple(data_store.loaded_data) + ("None",)
     last_target_data = next(
-        (
-            target_name
-            for target_name in reversed(tagert_names)
-            if target_name != "None"
-        ),
+        (target_name for target_name in reversed(taget_names) if target_name != "None"),
         None,
     )
     target_data_selection = Dropdown(
-        options=tagert_names,
+        options=taget_names,
         value="None",
         description="Loaded Data:",
         disabled=False,
@@ -1009,7 +1005,7 @@ def _add_axes_controls(widgets, data, fig_default_params, fig, axd, ui_action):
             ax=ax,
             ui_action=ui_action,
         )
-        for _, ax in axd.items()
+        for ax in axd.values()
     ]
     controls.children = children
     for i in range(len(children)):
@@ -1200,7 +1196,7 @@ class _VizManager:
             style={"description_width": "28%"},
             layout=Layout(width="70%"),
         )
-        self.viz_tab_loaded_data_dropdown.layout.display = "none"
+        # self.viz_tab_loaded_data_dropdown.layout.display = "none"
 
         # data
         self.fig_idx = {"idx": 1}
@@ -1293,13 +1289,23 @@ class _VizManager:
             ),
         )
 
+        self.viz_tab_data_selection = HBox(
+            [
+                self.viz_tab_simulation_data_dropdown,
+            ],
+            layout=Layout(
+                width="100%",
+                display="flex",
+                flex_flow="column",
+            ),
+        )
+
         visualization_tab = VBox(
             [
                 VBox(
                     [
                         config_sub_panel,
-                        self.viz_tab_simulation_data_dropdown,
-                        self.viz_tab_loaded_data_dropdown,
+                        self.viz_tab_data_selection,
                     ],
                     layout=Layout(
                         display="flex",
@@ -1315,7 +1321,7 @@ class _VizManager:
 
     def _layout_template_change(self, template_type):
         # check if plot set type requires loaded sim-data
-        # PreReq: The simulatio/loaded data is already defined in the
+        # PreReq: The simulation/loaded data is already defined in the
         # viz_tab_simulation_data_dropdown or viz_tab_loaded_data_dropdown
         # we dont do any additional filter here.
         template_name = template_type.new
@@ -1328,21 +1334,24 @@ class _VizManager:
             self.viz_tab_simulation_data_dropdown.options = sim_names
             self.viz_tab_simulation_data_dropdown.value = sim_names[0]
 
-            self.viz_tab_simulation_data_dropdown.layout.display = "flex"
-            self.viz_tab_loaded_data_dropdown.layout.display = "none"
+            self.viz_tab_data_selection.children = [
+                self.viz_tab_simulation_data_dropdown,
+            ]
+            self.viz_tab_data_selection.children[0].layout.visibility = "visible"
 
         elif template_name == "Loaded Data":
-            # Repopulateviz_tab_loaded_data_dropdown and hide simulation data dropdown
+            # Repopulate viz_tab_loaded_data_dropdown and hide simulation data dropdown
             loaded_data_names = list(data_store.loaded_data) or [" "]
             self.viz_tab_loaded_data_dropdown.options = loaded_data_names
             self.viz_tab_loaded_data_dropdown.value = loaded_data_names[0]
+            self.viz_tab_data_selection.children = [
+                self.viz_tab_loaded_data_dropdown,
+            ]
+            self.viz_tab_data_selection.children[0].layout.visibility = "visible"
 
-            self.viz_tab_simulation_data_dropdown.layout.display = "none"
-            self.viz_tab_loaded_data_dropdown.layout.display = "flex"
         else:
             ## Hide both dropdowns
-            self.viz_tab_simulation_data_dropdown.layout.display = "none"
-            self.viz_tab_loaded_data_dropdown.layout.display = "none"
+            self.viz_tab_data_selection.children[0].layout.visibility = "hidden"
 
     @unlink_relink(attribute="figs_config_tab_link")
     def add_figure(self, b=None):
@@ -1414,13 +1423,6 @@ class _VizManager:
             or template_name in data_templates
             or is_loaded_data_entry
         ), "No such template"
-
-        self.viz_tab_simulation_data_dropdown.layout.display = (
-            "none" if is_loaded_data_entry else "flex"
-        )
-        self.viz_tab_loaded_data_dropdown.layout.display = (
-            "flex" if is_loaded_data_entry else "none"
-        )
 
         # Calls viz_manager._layout_template_change
         self.templates_dropdown.value = template_name
