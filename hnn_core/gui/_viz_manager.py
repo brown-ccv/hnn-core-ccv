@@ -1149,7 +1149,6 @@ class _VizManager:
         # data
         self.fig_idx = {"idx": 1}
         self.figs = {}
-        # self._simulation_store = data_store.loaded_data
 
     @property
     def widgets(self):

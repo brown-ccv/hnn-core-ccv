@@ -713,9 +713,6 @@ class HNNGUI:
             sensible_default_cores=True,
         )
 
-        # In-memory storage of all simulation and visualization related data
-        # self.simulation_data = defaultdict(lambda: dict(net=None, dpls=list()))
-
         # ==================================================
         # Simulation tab
         # ==================================================
@@ -1259,16 +1256,6 @@ class HNNGUI:
             "plot_sim_selections": self.plot_sim_selections_dict,
             "current_sim_name": self.widget_simulation_name.value,
         }
-
-    # @property
-    # def run_simulations(self):
-    #     """Provides easy access to run simulation data."""
-    #     return data_store.simulated_data
-
-    # @property
-    # def loaded_simulations(self):
-    #     """Provides easy access to loaded simulation data."""
-    #     return data_store.loaded_data
 
     @staticmethod
     def load_parameters(params_fname):
@@ -5196,7 +5183,7 @@ def _serialize_simulation(log_out, sim_data, simulation_list_widget):
         return serialize_simulation(sim_data, sim_name)
 
 
-def serialize_simulation(simulations_data, simulation_name):
+def serialize_simulation(all_simulation_data, simulation_name):
     """Serializes simulation data to CSV.
 
     Creates a single CSV file or a ZIP file containing multiple CSVs,
@@ -5209,7 +5196,7 @@ def serialize_simulation(simulations_data, simulation_name):
     fmt = "%f, %f, %f, %f"
 
     ## retrieve simulation by name
-    simulation_data = simulations_data[simulation_name]
+    simulation_data = all_simulation_data[simulation_name]
     for dpl_trial in simulation_data["dpls"]:
         # Combine all data columns at once
         signals_matrix = np.column_stack(
