@@ -52,7 +52,8 @@ from hnn_core.cells_default import _exp_g_at_dist
 from hnn_core.dipole import _read_dipole_txt, average_dipoles
 from hnn_core.gui._logging import logger
 from hnn_core.gui._data_store import data_store
-from hnn_core.gui._gui_utils import clear_empty_trash_simulations
+
+# from hnn_core.gui._gui_utils import clear_empty_trash_simulations
 from hnn_core.gui._viz_manager import _idx2figname, _VizManager
 from hnn_core.hnn_io import dict_to_network, write_network_configuration
 from hnn_core.network import pick_connection, _check_global_synaptic_gains_uniformity
@@ -4911,7 +4912,12 @@ def run_button_clicked(
     with log_out:
         try:
             # clear empty trash simulations
-            clear_empty_trash_simulations(simulation_data)
+            # Camilo: It seems the function below is not necessary
+            # it's implementation was before my time, so
+            # I am not sure what it supposes to fix.
+            # Test as passing without it. I am going go comment the
+            # code for now in case is needed again.
+            # clear_empty_trash_simulations(simulation_data)
 
             _sim_name = widget_simulation_name.value
             if (
@@ -5913,8 +5919,12 @@ def run_opt_button_clicked(
         try:
             # Sim data setup (and related input validation)
             # --------------------------------------------------------------------------
-
-            clear_empty_trash_simulations(simulation_data)
+            # Camilo: It seems the function below is not necessary
+            # it's implementation was before my time, so
+            # I am not sure what it supposes to fix.
+            # Test as passing without it. I am going go comment the
+            # code for now in case is needed again.
+            # clear_empty_trash_simulations(simulation_data)
 
             # clear empty trash simulations
             #

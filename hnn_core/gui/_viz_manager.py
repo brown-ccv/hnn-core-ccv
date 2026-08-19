@@ -536,6 +536,7 @@ def _plot_on_axes(
     Parameters
     ----------
     button : ipywidgets.Button
+        Button that plots new data on top of existing figure.
     widgets_simulation : ipywidgets.Dropdown
         A dropdown widget that contains all the simulation names.
     widgets_plot_type : ipywidgets.Dropdown
@@ -580,7 +581,7 @@ def _plot_on_axes(
     # freeze plot type
     widgets_plot_type.disabled = True
 
-    ## It must look up both run_data and laoded_data dicts for sim_name
+    ## It must look up both run_data and loaded_data dicts for sim_name
     ## Maybe throw exception if there's no simulation?
     single_simulation = data_store.simulated_data.get(
         sim_name
