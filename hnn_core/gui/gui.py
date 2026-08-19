@@ -5009,6 +5009,9 @@ def run_button_clicked(
                 viz_manager.fig_default_params[widget] = value
 
             viz_manager.add_figure()
+            # By default the value in fig_templates dropdown is fig_templates[0]
+            # So  viz_manager.add_figure() is not aware it needs to draw sim data
+            # This code forces it to draw the dipole data
             fig_name = _idx2figname(viz_manager.data["fig_idx"]["idx"] - 1)
             ax_plots = [("ax0", "input histogram"), ("ax1", "current dipole")]
             for ax_name, plot_type in ax_plots:

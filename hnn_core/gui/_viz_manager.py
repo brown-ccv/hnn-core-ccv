@@ -1212,6 +1212,7 @@ class _VizManager:
             "figs_tabs": self.figs_tabs,
             "templates_dropdown": self.templates_dropdown,
             "dataset_dropdown": self.viz_tab_simulation_data_dropdown,
+            "loaded_data_dropdown": self.viz_tab_loaded_data_dropdown,
         }
 
     @property
@@ -1360,21 +1361,36 @@ class _VizManager:
             logger.error("No data has been simulated or loaded")
             return
 
+        sim_name = None
         template_name = self.widgets["templates_dropdown"].value
         is_data_template = _check_template_type_is_data_dependant(template_name)
-        ## Only checking run simulations
-        if is_data_template:
-            sim_name = self.widgets["dataset_dropdown"].value
-            if sim_name not in data_store.simulated_data:
+        is_loaded_data = template_name == "Loaded Data"
+        if is_data_template or is_loaded_data:
+            dropdown_key = (
+                "dataset_dropdown" if is_data_template else "loaded_data_dropdown"
+            )
+            available_data = (
+                data_store.simulated_data
+                if is_data_template
+                else data_store.loaded_data
+            )
+            sim_name = self.widgets[dropdown_key].value
+            if sim_name not in available_data:
                 logger.error("No simulation data has been simulated or loaded")
                 return
 
+        ax_plots = None
+        preprocessing_config = None
         # Use data_templates dictionary if it's a data dependent layout
-        template_type = (
-            data_templates[template_name]
-            if is_data_template
-            else fig_templates[template_name]
-        )
+        if is_data_template:
+            template_type = data_templates[template_name]
+            ax_plots = data_templates[template_name]["ax_plots"]
+        elif is_loaded_data:
+            template_type = fig_templates["[Blank] single figure"]
+            ax_plots = [("ax0", "current dipole")]
+            preprocessing_config = {"dipole_smooth": 0, "dipole_scaling": 1}
+        else:
+            template_type = fig_templates[template_name]
 
         # Add empty figure according to template arguments
         _add_figure(
@@ -1388,32 +1404,38 @@ class _VizManager:
             ui_action=self.last_action,
         )
 
-        # Plot data if it is a data-dependent template
-        if is_data_template:
+        # Plot data
+        # This case only applies when the "Make figure" button in the viz tab  is clicked
+        if sim_name is not None and ax_plots is not None:
             fig_name = _idx2figname(self.data["fig_idx"]["idx"] - 1)
-            # get figs per axis
-            ax_plots = data_templates[template_name]["ax_plots"]
-            for ax_name, plot_type in ax_plots:
-                # paint fig in axis
-                self._simulate_edit_figure(
-                    fig_name, ax_name, sim_name, plot_type, {}, "plot"
-                )
-            # template post-processing
-            fig_key = self.data["fig_idx"]["idx"] - 1
-            _postprocess_template(
-                template_name,
-                fig=self.figs[fig_key],
-                idx=fig_key,
-                use_ipympl=self.use_dynamic_rendering,
-                widgets=self.widgets,
+            self._draw_simulation_data(
+                fig_name, sim_name, template_name, ax_plots, preprocessing_config
             )
-
             logger.info(
                 f"Figure {template_name} for simulation {sim_name} has been created"
             )
 
     def _simulate_add_fig(self):
         self.make_fig_button.click()
+
+    def _draw_simulation_data(
+        self, fig_name, sim_name, template_name, ax_plots, preprocessing_config=None
+    ):
+        preprocessing_config = preprocessing_config or {}
+        # get figs per axis
+        for ax_name, plot_type in ax_plots:
+            self._simulate_edit_figure(
+                fig_name, ax_name, sim_name, plot_type, preprocessing_config, "plot"
+            )
+        # template post-processing
+        fig_key = self.data["fig_idx"]["idx"] - 1
+        _postprocess_template(
+            template_name,
+            fig=self.figs[fig_key],
+            idx=fig_key,
+            use_ipympl=self.use_dynamic_rendering,
+            widgets=self.widgets,
+        )
 
     ## This function resets the state of the templates names list dropdown
     def _simulate_switch_fig_template(self, template_name: str):
