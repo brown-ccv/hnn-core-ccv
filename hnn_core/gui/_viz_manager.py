@@ -765,13 +765,17 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_acti
         style=analysis_style,
     )
 
-    taget_names = tuple(data_store.loaded_data) + ("None",)
+    target_names = tuple(data_store.loaded_data) + ("None",)
     last_target_data = next(
-        (target_name for target_name in reversed(taget_names) if target_name != "None"),
+        (
+            target_name
+            for target_name in reversed(target_names)
+            if target_name != "None"
+        ),
         None,
     )
     target_data_selection = Dropdown(
-        options=taget_names,
+        options=target_names,
         value="None",
         description="Loaded Data:",
         disabled=False,
@@ -1196,12 +1200,10 @@ class _VizManager:
             style={"description_width": "28%"},
             layout=Layout(width="70%"),
         )
-        # self.viz_tab_loaded_data_dropdown.layout.display = "none"
 
         # data
         self.fig_idx = {"idx": 1}
         self.figs = {}
-        # self._simulation_store = data_store.loaded_data
         self.last_action = ""
 
     @property
