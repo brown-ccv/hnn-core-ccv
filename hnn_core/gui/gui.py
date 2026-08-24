@@ -1489,7 +1489,9 @@ class HNNGUI:
         self.run_button.on_click(_run_button_clicked_cb)
         self.run_opt_button.on_click(_run_opt_button_clicked_cb)
 
-        self.load_experimental_data_button.observe(_on_upload_experimental_data_cb, names="value")
+        self.load_experimental_data_button.observe(
+            _on_upload_experimental_data_cb, names="value"
+        )
         self.simulation_list_widget.observe(_simulation_list_change_cb, "value")
         self.widget_drive_type_selection.observe(_driver_type_change_cb, "value")
 
@@ -1576,7 +1578,9 @@ class HNNGUI:
         """refresh gui.opt_target_widgets["target_dipole_data"] dropdown using data_store"""
         all_experimental_data_names = list(data_store.experimental_data) or [" "]
         prior_value = self.opt_target_widgets["target_dipole_data"].value
-        self.opt_target_widgets["target_dipole_data"].options = all_experimental_data_names
+        self.opt_target_widgets[
+            "target_dipole_data"
+        ].options = all_experimental_data_names
         self.opt_target_widgets["target_dipole_data"].value = prior_value
 
     def _delete_single_drive(self, b):

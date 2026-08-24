@@ -1086,7 +1086,7 @@ def test_dipole_data_overlay(setup_gui):
 
     # Load data
     file_path = assets_path / "test_default.csv"
-    gui._simulate_upload_data(file_path)
+    gui._simulate_upload_experimental_data(file_path)
 
     # Edit the figure with data overlay
     figid = 1
@@ -1201,7 +1201,7 @@ def test_gui_download_simulation(setup_gui):
 
     # Check no loaded data is listed in the sims dropdown list to download
     file1_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/S1_SupraT.txt"  # noqa
-    gui._simulate_upload_data(file1_url)
+    gui._simulate_upload_experimental_data(file1_url)
     download_simulation_list = gui.simulation_list_widget.options
     assert (
         len(
@@ -1233,7 +1233,7 @@ def test_gui_upload_csv_simulation(setup_gui):
     else:  # UNIX-like systems
         file_url = "file://" + absolute_path
 
-    _ = gui._simulate_upload_data(file_url)
+    _ = gui._simulate_upload_experimental_data(file_url)
 
     # we are loading only 1 trial,
     # assume all the data we need is in the [0] position
@@ -1245,13 +1245,16 @@ def test_gui_upload_csv_simulation(setup_gui):
     assert type(data_store.experimental_data["test_default"]["dpls"]) is list
     assert len(gui.viz_manager.data["figs"]) == 1
     assert (
-        len(data_store.experimental_data["test_default"]["dpls"][0].data["agg"]) == data_lengh
+        len(data_store.experimental_data["test_default"]["dpls"][0].data["agg"])
+        == data_lengh
     )
     assert (
-        len(data_store.experimental_data["test_default"]["dpls"][0].data["L2"]) == data_lengh
+        len(data_store.experimental_data["test_default"]["dpls"][0].data["L2"])
+        == data_lengh
     )
     assert (
-        len(data_store.experimental_data["test_default"]["dpls"][0].data["L5"]) == data_lengh
+        len(data_store.experimental_data["test_default"]["dpls"][0].data["L5"])
+        == data_lengh
     )
 
 
@@ -1925,7 +1928,7 @@ def test_gui_run_optimization(backend_selection, opt_solver, dt, setup_gui):
     if not file_path.exists():
         data_url = f"https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/{file_path}"  # noqa
         urlretrieve(data_url, file_path)
-    gui._simulate_upload_data(file_path)
+    gui._simulate_upload_experimental_data(file_path)
 
     # Our first optimization run will use the  objective function of `dipole_corr`
     # ----------------------------------------------------------------------------------
@@ -2320,7 +2323,7 @@ def test_viz_tab_dropdown(setup_gui):
     gui.run_button.click()
 
     file_path = assets_path / "test_default.csv"
-    gui._simulate_upload_data(file_path)
+    gui._simulate_upload_experimental_data(file_path)
 
     # simulate change value of templates_dropdown
     # Test the viz_tab_simulation_data_dropdown is showing by being a child of the container viz_tab_data_selection
@@ -2334,11 +2337,12 @@ def test_viz_tab_dropdown(setup_gui):
 
     # simulate change value of templates_dropdown
     # Test the viz_tab_simulation_data_dropdown is showing by being a child of the container viz_tab_data_selection
-    gui.viz_manager.templates_dropdown.value = "Loaded Data"
-    assert "test_default" in gui.viz_manager.viz_tab_loaded_data_dropdown.options
-    assert len(gui.viz_manager.viz_tab_loaded_data_dropdown.options) == 1
+    gui.viz_manager.templates_dropdown.value = gui.viz_manager.experimenta_data_template
+    assert "test_default" in gui.viz_manager.viz_tab_experimental_data_dropdown.options
+    assert len(gui.viz_manager.viz_tab_experimental_data_dropdown.options) == 1
     assert (
-        gui.viz_manager.viz_tab_data_selection.children[0].description == "Loaded data:"
+        gui.viz_manager.viz_tab_data_selection.children[0].description
+        == "Experimental data:"
     )
 
     # simulate change value of templates_dropdown
@@ -2362,7 +2366,7 @@ def test_viz_tab_ax_control_dropdowns(setup_gui):
 
     loaded_name = "test_default"
     file_path = assets_path / "test_default.csv"
-    gui._simulate_upload_data(file_path)
+    gui._simulate_upload_experimental_data(file_path)
 
     viz_tabs = gui.viz_manager.axes_config_tabs.children
     for tab in viz_tabs:
@@ -2395,7 +2399,7 @@ def test_fig_contain_data(setup_gui):
 
     # after uploading data, the auto-generated fig should also have data
     file_path = assets_path / "test_default.csv"
-    gui._simulate_upload_data(file_path)
+    gui._simulate_upload_experimental_data(file_path)
     loaded_fig_idx = gui.viz_manager.fig_idx["idx"] - 1
     loaded_fig = gui.viz_manager.figs[loaded_fig_idx]
     assert loaded_fig.axes[0].has_data()

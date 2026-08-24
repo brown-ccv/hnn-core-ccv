@@ -25,11 +25,11 @@ class DataStore(dict):
 
     @property
     def experimental_data_names(self):
-        return self["loaded_data"].keys()
+        return self["experimental_data"].keys()
 
     @property
     def experimental_data(self):
-        return self["loaded_data"]
+        return self["experimental_data"]
 
     @property
     def networks(self):
@@ -37,7 +37,9 @@ class DataStore(dict):
 
     @property
     def all_data_names(self):
-        return list(self["simulated_data"].keys()) + list(self["experimental_data"].keys())
+        return list(self["simulated_data"].keys()) + list(
+            self["experimental_data"].keys()
+        )
 
     def reset(self):
         """Clear all stored simulation/loaded data (i.e. GUI reinitialization)."""
