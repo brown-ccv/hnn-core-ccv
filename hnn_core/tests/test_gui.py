@@ -1412,7 +1412,7 @@ def test_fig_tabs_dropdown_lists(setup_gui):
             # Check that dropdown has been updated with all simulation names
             assert all(sim in sim_names for sim in [sim_name, sim_name2])
 
-            assert ax_control.children[4].description == "Loaded Data:"
+            assert ax_control.children[4].description == "Experimental Data:"
 
             # Check the data to compare dropdown is enable for
             # non "input histograms" plot type
@@ -2379,7 +2379,7 @@ def test_viz_tab_ax_control_dropdowns(setup_gui):
             assert sim_name in simulation_dropdown.options
             assert loaded_name not in simulation_dropdown.options
 
-            assert loaded_dropdown.description == "Loaded Data:"
+            assert loaded_dropdown.description == "Experimental Data:"
             assert loaded_name in loaded_dropdown.options
             assert sim_name not in loaded_dropdown.options
 
