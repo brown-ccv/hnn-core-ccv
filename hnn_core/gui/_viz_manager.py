@@ -537,6 +537,7 @@ def _plot_on_axes(
     Parameters
     ----------
     button : ipywidgets.Button
+        Button that plots new data on top of existing figure.
     widgets_simulation : ipywidgets.Dropdown
         A dropdown widget that contains all the simulation names.
     widgets_plot_type : ipywidgets.Dropdown

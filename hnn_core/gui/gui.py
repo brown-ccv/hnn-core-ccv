@@ -52,7 +52,8 @@ from hnn_core.cells_default import _exp_g_at_dist
 from hnn_core.dipole import _read_dipole_txt, average_dipoles
 from hnn_core.gui._logging import logger
 from hnn_core.gui._data_store import data_store
-from hnn_core.gui._gui_utils import clear_empty_trash_simulations
+
+# from hnn_core.gui._gui_utils import clear_empty_trash_simulations
 from hnn_core.gui._viz_manager import _idx2figname, _VizManager
 from hnn_core.hnn_io import dict_to_network, write_network_configuration
 from hnn_core.network import pick_connection, _check_global_synaptic_gains_uniformity
@@ -713,9 +714,6 @@ class HNNGUI:
             sensible_default_cores=True,
         )
 
-        # In-memory storage of all simulation and visualization related data
-        # self.simulation_data = defaultdict(lambda: dict(net=None, dpls=list()))
-
         # ==================================================
         # Simulation tab
         # ==================================================
@@ -1259,16 +1257,6 @@ class HNNGUI:
             "plot_sim_selections": self.plot_sim_selections_dict,
             "current_sim_name": self.widget_simulation_name.value,
         }
-
-    # @property
-    # def run_simulations(self):
-    #     """Provides easy access to run simulation data."""
-    #     return data_store.simulated_data
-
-    # @property
-    # def loaded_simulations(self):
-    #     """Provides easy access to loaded simulation data."""
-    #     return data_store.loaded_data
 
     @staticmethod
     def load_parameters(params_fname):
@@ -4928,7 +4916,12 @@ def run_button_clicked(
     with log_out:
         try:
             # clear empty trash simulations
-            clear_empty_trash_simulations(simulation_data)
+            # Camilo: It seems the function below is not necessary
+            # it's implementation was before my time, so
+            # I am not sure what it supposes to fix.
+            # Test as passing without it. I am going go comment the
+            # code for now in case is needed again.
+            # clear_empty_trash_simulations(simulation_data)
 
             _sim_name = widget_simulation_name.value
             if (
@@ -5206,7 +5199,7 @@ def _serialize_simulation(log_out, sim_data, simulation_list_widget):
         return serialize_simulation(sim_data, sim_name)
 
 
-def serialize_simulation(simulations_data, simulation_name):
+def serialize_simulation(all_simulation_data, simulation_name):
     """Serializes simulation data to CSV.
 
     Creates a single CSV file or a ZIP file containing multiple CSVs,
@@ -5219,7 +5212,7 @@ def serialize_simulation(simulations_data, simulation_name):
     fmt = "%f, %f, %f, %f"
 
     ## retrieve simulation by name
-    simulation_data = simulations_data[simulation_name]
+    simulation_data = all_simulation_data[simulation_name]
     for dpl_trial in simulation_data["dpls"]:
         # Combine all data columns at once
         signals_matrix = np.column_stack(
@@ -5936,8 +5929,12 @@ def run_opt_button_clicked(
         try:
             # Sim data setup (and related input validation)
             # --------------------------------------------------------------------------
-
-            clear_empty_trash_simulations(simulation_data)
+            # Camilo: It seems the function below is not necessary
+            # it's implementation was before my time, so
+            # I am not sure what it supposes to fix.
+            # Test as passing without it. I am going go comment the
+            # code for now in case is needed again.
+            # clear_empty_trash_simulations(simulation_data)
 
             # clear empty trash simulations
             #
