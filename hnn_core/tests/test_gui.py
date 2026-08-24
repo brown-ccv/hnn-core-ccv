@@ -445,36 +445,36 @@ def test_gui_upload_data():
     _ = gui.compose()
 
     assert len(gui.viz_manager.data["figs"]) == 0
-    assert len(data_store.loaded_data) == 0
+    assert len(data_store.experimental_data) == 0
 
     file1_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/S1_SupraT.txt"  # noqa
     file2_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/yes_trial_S1_ERP_all_avg.txt"  # noqa
-    gui._simulate_upload_data(file1_url)
+    gui._simulate_upload_experimental_data(file1_url)
 
-    assert len(data_store.loaded_data) == 1
-    assert "S1_SupraT" in data_store.loaded_data.keys()
-    assert data_store.loaded_data["S1_SupraT"]["net"] is None
-    assert type(data_store.loaded_data["S1_SupraT"]["dpls"]) is list
+    assert len(data_store.experimental_data) == 1
+    assert "S1_SupraT" in data_store.experimental_data.keys()
+    assert data_store.experimental_data["S1_SupraT"]["net"] is None
+    assert type(data_store.experimental_data["S1_SupraT"]["dpls"]) is list
     assert len(gui.viz_manager.data["figs"]) == 1
     # support uploading multiple external data.
-    gui._simulate_upload_data(file2_url)
-    assert len(data_store.loaded_data) == 2
+    gui._simulate_upload_experimental_data(file2_url)
+    assert len(data_store.experimental_data) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
     # make sure no repeated uploading for the same name.
-    gui._simulate_upload_data(file1_url)
-    assert len(data_store.loaded_data) == 2
+    gui._simulate_upload_experimental_data(file1_url)
+    assert len(data_store.experimental_data) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
     # No data loading for legacy multi-trial data files.
     file3_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/gamma_tutorial/100_trials.txt"  # noqa
-    gui._simulate_upload_data(file3_url)
+    gui._simulate_upload_experimental_data(file3_url)
     assert any(
         "Data are supposed to have 2 or 4 columns while we have 101." in entry["text"]
         for entry in gui._log_out.outputs
     )
 
-    assert len(data_store.loaded_data) == 2
+    assert len(data_store.experimental_data) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
     plt.close("all")
@@ -1221,7 +1221,7 @@ def test_gui_upload_csv_simulation(setup_gui):
     gui = setup_gui
 
     assert len(gui.viz_manager.data["figs"]) == 0
-    assert len(data_store.loaded_data) == 0
+    assert len(data_store.experimental_data) == 0
 
     # Formulate path to the file
     file_path = assets_path / "test_default.csv"
@@ -1237,21 +1237,21 @@ def test_gui_upload_csv_simulation(setup_gui):
 
     # we are loading only 1 trial,
     # assume all the data we need is in the [0] position
-    data_lengh = len(data_store.loaded_data["test_default"]["dpls"][0].times)
+    data_lengh = len(data_store.experimental_data["test_default"]["dpls"][0].times)
 
-    assert len(data_store.loaded_data) == 1
-    assert "test_default" in data_store.loaded_data.keys()
-    assert data_store.loaded_data["test_default"]["net"] is None
-    assert type(data_store.loaded_data["test_default"]["dpls"]) is list
+    assert len(data_store.experimental_data) == 1
+    assert "test_default" in data_store.experimental_data.keys()
+    assert data_store.experimental_data["test_default"]["net"] is None
+    assert type(data_store.experimental_data["test_default"]["dpls"]) is list
     assert len(gui.viz_manager.data["figs"]) == 1
     assert (
-        len(data_store.loaded_data["test_default"]["dpls"][0].data["agg"]) == data_lengh
+        len(data_store.experimental_data["test_default"]["dpls"][0].data["agg"]) == data_lengh
     )
     assert (
-        len(data_store.loaded_data["test_default"]["dpls"][0].data["L2"]) == data_lengh
+        len(data_store.experimental_data["test_default"]["dpls"][0].data["L2"]) == data_lengh
     )
     assert (
-        len(data_store.loaded_data["test_default"]["dpls"][0].data["L5"]) == data_lengh
+        len(data_store.experimental_data["test_default"]["dpls"][0].data["L5"]) == data_lengh
     )
 
 
@@ -2268,13 +2268,13 @@ def test_data_store_direct_reset():
 
     store = DataStore()
     store.simulated_data["a"]["dpls"].append("fake_dpl")
-    store.loaded_data["b"]["net"] = "fake_net"
+    store.experimental_data["b"]["net"] = "fake_net"
     store.networks["c"] = "fake_config"
 
     store.reset()
 
     assert len(store.simulated_data) == 0
-    assert len(store.loaded_data) == 0
+    assert len(store.experimental_data) == 0
     assert len(store.networks) == 0
     assert list(store.all_data_names) == []
 
@@ -2293,7 +2293,7 @@ def test_data_store_reset_on_gui_reinit(setup_gui):
     HNNGUI(network_configuration=assets_path / "neymotin2020_3x3_drives.json")
 
     assert len(data_store.simulated_data) == 0
-    assert len(data_store.loaded_data) == 0
+    assert len(data_store.experimental_data) == 0
     assert len(data_store.networks) == 0
 
 

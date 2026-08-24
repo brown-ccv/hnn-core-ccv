@@ -154,7 +154,7 @@ data_templates = {
 
 
 def check_sim_plot_types(new_sim_name, plot_type_selection, target_selection):
-    if new_sim_name in data_store.loaded_data_names:
+    if new_sim_name in data_store.experimental_data_names:
         plot_type_selection.options = [
             pt for pt in _plot_types if pt not in _ext_data_disabled_plot_types
         ]
@@ -574,7 +574,7 @@ def _plot_on_axes(
     """
     sim_name = (
         data_widget.value
-        if plot_context.get("is_loaded_data")
+        if plot_context.get("is_experimental_data")
         else simulations_widget.value
     )
 
@@ -582,7 +582,7 @@ def _plot_on_axes(
     ## Maybe throw exception if there's no simulation?
     single_simulation = data_store.simulated_data.get(
         sim_name
-    ) or data_store.loaded_data.get(sim_name)
+    ) or data_store.experimental_data.get(sim_name)
 
     plot_type = widgets_plot_type.value
     # disable 'add plots' button for types that do not support overlay
@@ -609,14 +609,14 @@ def _plot_on_axes(
     # If target_simulations is not None and we are plotting a dipole,
     # we need to plot the target dipole as well.
     if (
-        not plot_context.get("is_loaded_data")
-        and data_widget.value in data_store.loaded_data_names
+        not plot_context.get("is_experimental_data")
+        and data_widget.value in data_store.experimental_data_names
         and plot_type == "current dipole"
     ):
         target_sim_name = data_widget.value
         target_sim = data_store.simulated_data.get(
             target_sim_name
-        ) or data_store.loaded_data.get(target_sim_name)
+        ) or data_store.experimental_data.get(target_sim_name)
 
         data_plot_config = {
             "dipole_scaling": data_scaling.value,
@@ -765,19 +765,15 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_acti
         style=analysis_style,
     )
 
-    target_names = tuple(data_store.loaded_data) + ("None",)
+    target_names = tuple(data_store.experimental_data) + ("None",)
     last_target_data = next(
-        (
-            target_name
-            for target_name in reversed(target_names)
-            if target_name != "None"
-        ),
+        (target_name for target_name in reversed(target_names) if target_name != "None"),
         None,
     )
     target_data_selection = Dropdown(
         options=target_names,
         value="None",
-        description="Loaded Data:",
+        description="Experimental Data:",
         disabled=False,
         layout=layout,
         style=analysis_style,
@@ -1170,7 +1166,7 @@ class _VizManager:
         template_names.extend(list(fig_templates.keys()))
         self.templates_dropdown = Dropdown(
             description="Figure Template:",
-            options=template_names + ["Loaded Data"],
+            options=template_names + ["Experimental Data"],
             value=template_names[0],
             style={"description_width": "28%"},
             layout=Layout(width="70%"),
@@ -1193,13 +1189,14 @@ class _VizManager:
             layout=Layout(width="70%"),
         )
 
-        self.viz_tab_loaded_data_dropdown = Dropdown(
-            description="Loaded data:",
+        self.viz_tab_loaded_experimental_data_dropdown = Dropdown(
+            description="Experimental data:",
             options=[],
             value=None,
             style={"description_width": "28%"},
             layout=Layout(width="70%"),
         )
+        
 
         # data
         self.fig_idx = {"idx": 1}
@@ -1214,7 +1211,7 @@ class _VizManager:
             "figs_tabs": self.figs_tabs,
             "templates_dropdown": self.templates_dropdown,
             "dataset_dropdown": self.viz_tab_simulation_data_dropdown,
-            "loaded_data_dropdown": self.viz_tab_loaded_data_dropdown,
+            "experimental_data_dropdown": self.viz_tab_loaded_experimental_data_dropdown,
         }
 
     @property
@@ -1230,7 +1227,7 @@ class _VizManager:
 
     def reset_fig_config_tabs(self, template_name=None):
         """Reset the figure config tabs with most recent simulation data."""
-        # simulation_names = tuple(data_store.all_data_names)
+
 
         for tab in self.axes_config_tabs.children:
             controls = tab.children[1]
@@ -1252,12 +1249,12 @@ class _VizManager:
                 # Again, note that we need to save the previous value prior to resetting
                 # the options, because resetting the options also resets the value.
                 prev_target = simulation_to_compare.value
-                simulation_to_compare.options = list(data_store.loaded_data_names) + [
+                simulation_to_compare.options = list(data_store.experimental_data_names) + [
                     "None"
                 ]
                 simulation_to_compare.value = (
                     prev_target
-                    if prev_target in data_store.loaded_data_names
+                    if prev_target in data_store.experimental_data_names
                     else "None"
                 )
 
@@ -1342,13 +1339,13 @@ class _VizManager:
             ]
             self.viz_tab_data_selection.children[0].layout.visibility = "visible"
 
-        elif template_name == "Loaded Data":
+        elif template_name == "Experimental Data":
             # Repopulate viz_tab_loaded_data_dropdown and hide simulation data dropdown
-            loaded_data_names = list(data_store.loaded_data) or [" "]
-            self.viz_tab_loaded_data_dropdown.options = loaded_data_names
-            self.viz_tab_loaded_data_dropdown.value = loaded_data_names[0]
+            loaded_data_names = list(data_store.experimental_data) or [" "]
+            self.viz_tab_loaded_experimental_data_dropdown.options = loaded_data_names
+            self.viz_tab_loaded_experimental_data_dropdown.value = loaded_data_names[0]
             self.viz_tab_data_selection.children = [
-                self.viz_tab_loaded_data_dropdown,
+                self.viz_tab_loaded_experimental_data_dropdown,
             ]
             self.viz_tab_data_selection.children[0].layout.visibility = "visible"
 
@@ -1366,15 +1363,15 @@ class _VizManager:
         sim_name = None
         template_name = self.widgets["templates_dropdown"].value
         is_data_template = _check_template_type_is_data_dependant(template_name)
-        is_loaded_data = template_name == "Loaded Data"
-        if is_data_template or is_loaded_data:
+        is_experimental_data = template_name == "Experimental Data"
+        if is_data_template or is_experimental_data:
             dropdown_key = (
-                "dataset_dropdown" if is_data_template else "loaded_data_dropdown"
+                "dataset_dropdown" if is_data_template else "experimental_data_dropdown"
             )
             available_data = (
                 data_store.simulated_data
                 if is_data_template
-                else data_store.loaded_data
+                else data_store.experimental_data
             )
             sim_name = self.widgets[dropdown_key].value
             if sim_name not in available_data:
@@ -1387,7 +1384,7 @@ class _VizManager:
         if is_data_template:
             template_type = data_templates[template_name]
             ax_plots = data_templates[template_name]["ax_plots"]
-        elif is_loaded_data:
+        elif is_experimental_data:
             template_type = fig_templates["[Blank] single figure"]
             ax_plots = [("ax0", "current dipole")]
             preprocessing_config = {"dipole_smooth": 0, "dipole_scaling": 1}
@@ -1441,11 +1438,11 @@ class _VizManager:
 
     ## This function resets the state of the templates names list dropdown
     def _simulate_switch_fig_template(self, template_name: str):
-        is_loaded_data_entry = template_name == "Loaded Data"
+        is_exprimental_data_entry = template_name == "Experimental Data"
         assert (
             template_name in fig_templates
             or template_name in data_templates
-            or is_loaded_data_entry
+            or is_exprimental_data_entry
         ), "No such template"
 
         # Calls viz_manager._layout_template_change
@@ -1520,18 +1517,18 @@ class _VizManager:
 
             if self.last_action == "upload_data":
                 widget_index = 4
-                plot_context["is_loaded_data"] = True
+                plot_context["is_experimental_data"] = True
             elif self.last_action == "run_simulation":
                 widget_index = 1
-                plot_context["is_loaded_data"] = False
+                plot_context["is_experimental_data"] = False
             elif simulation_name in data_store.simulated_data_names:
                 # Simulation data widget
                 widget_index = 1
-                plot_context["is_loaded_data"] = False
-            elif simulation_name in data_store.loaded_data_names:
+                plot_context["is_experimental_data"] = False
+            elif simulation_name in data_store.experimental_data_names:
                 # Loaded data widget
                 widget_index = 4
-                plot_context["is_loaded_data"] = True
+                plot_context["is_experimental_data"] = True
             else:
                 raise RuntimeError(
                     f"'{simulation_name}' is not in simulated_data_names nor loaded_data_names"

@@ -9,7 +9,7 @@ class DataStore(dict):
         super().__init__(
             {
                 "simulated_data": defaultdict(lambda: dict(net=None, dpls=list())),
-                "loaded_data": defaultdict(lambda: dict(net=None, dpls=list())),
+                "experimental_data": defaultdict(lambda: dict(net=None, dpls=list())),
                 # TODO: Implement load/save networks
                 "networks": {},
             }
@@ -24,11 +24,11 @@ class DataStore(dict):
         return self["simulated_data"].keys()
 
     @property
-    def loaded_data_names(self):
+    def experimental_data_names(self):
         return self["loaded_data"].keys()
 
     @property
-    def loaded_data(self):
+    def experimental_data(self):
         return self["loaded_data"]
 
     @property
@@ -37,12 +37,12 @@ class DataStore(dict):
 
     @property
     def all_data_names(self):
-        return list(self["simulated_data"].keys()) + list(self["loaded_data"].keys())
+        return list(self["simulated_data"].keys()) + list(self["experimental_data"].keys())
 
     def reset(self):
         """Clear all stored simulation/loaded data (i.e. GUI reinitialization)."""
         self["simulated_data"] = defaultdict(lambda: dict(net=None, dpls=list()))
-        self["loaded_data"] = defaultdict(lambda: dict(net=None, dpls=list()))
+        self["experimental_data"] = defaultdict(lambda: dict(net=None, dpls=list()))
         self["networks"] = {}
 
 
