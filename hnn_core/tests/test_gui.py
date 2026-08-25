@@ -1199,7 +1199,7 @@ def test_gui_download_simulation(setup_gui):
     # result is a single csv file
     assert file_extension == ".csv"
 
-    # Check no loaded data is listed in the sims dropdown list to download
+    # Check no experimental/loaded data is listed in the sims dropdown list to download
     file1_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/S1_SupraT.txt"  # noqa
     gui._simulate_upload_experimental_data(file1_url)
     download_simulation_list = gui.simulation_list_widget.options
@@ -2316,7 +2316,7 @@ def test_data_store_shared_singleton_across_modules(setup_gui):
 
 def test_viz_tab_dropdown(setup_gui):
     """Test switch template values in visualization tabs shows/hides the
-    simulation and loaded data dropdowns"""
+    simulation and experimental data dropdowns"""
     gui = setup_gui
     sim_name_1 = "default"
     gui.widget_simulation_name.value = sim_name_1
@@ -2358,7 +2358,7 @@ def test_viz_tab_dropdown(setup_gui):
 def test_viz_tab_ax_control_dropdowns(setup_gui):
     """Test dropdowns in ax controls :
     Simulation Data Dropdown only shows simulated data
-    Loaded Data only shows loaded data"""
+    Experimental Data only shows experimental data"""
 
     gui = setup_gui
 
@@ -2366,7 +2366,7 @@ def test_viz_tab_ax_control_dropdowns(setup_gui):
     gui.widget_simulation_name.value = sim_name
     gui.run_button.click()
 
-    loaded_name = "test_default"
+    experimental_name = "test_default"
     file_path = assets_path / "test_default.csv"
     gui._simulate_upload_experimental_data(file_path)
 
@@ -2375,15 +2375,15 @@ def test_viz_tab_ax_control_dropdowns(setup_gui):
         controls = tab.children[1]
         for ax_control in controls.children:
             simulation_dropdown = ax_control.children[1]
-            loaded_dropdown = ax_control.children[4]
+            experimental_dropdown = ax_control.children[4]
 
             assert simulation_dropdown.description == "Simulation Data:"
             assert sim_name in simulation_dropdown.options
-            assert loaded_name not in simulation_dropdown.options
+            assert experimental_name not in simulation_dropdown.options
 
-            assert loaded_dropdown.description == "Experimental Data:"
-            assert loaded_name in loaded_dropdown.options
-            assert sim_name not in loaded_dropdown.options
+            assert experimental_dropdown.description == "Experimental Data:"
+            assert experimental_name in experimental_dropdown.options
+            assert sim_name not in experimental_dropdown.options
 
     plt.close("all")
 
@@ -2402,8 +2402,8 @@ def test_fig_contain_data(setup_gui):
     # after uploading data, the auto-generated fig should also have data
     file_path = assets_path / "test_default.csv"
     gui._simulate_upload_experimental_data(file_path)
-    loaded_fig_idx = gui.viz_manager.fig_idx["idx"] - 1
-    loaded_fig = gui.viz_manager.figs[loaded_fig_idx]
-    assert loaded_fig.axes[0].has_data()
+    experimental_fig_idx = gui.viz_manager.fig_idx["idx"] - 1
+    experimental_fig = gui.viz_manager.figs[experimental_fig_idx]
+    assert experimental_fig.axes[0].has_data()
 
     plt.close("all")

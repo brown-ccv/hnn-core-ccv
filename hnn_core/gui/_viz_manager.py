@@ -1246,7 +1246,7 @@ class _VizManager:
                     prev_sim if prev_sim in data_store.simulated_data_names else "None"
                 )
 
-                # Update the options for the Loaded data dropdown
+                # Update the options for the Experimental data dropdown
                 simulation_to_compare = ax_control.children[4]
                 # Again, note that we need to save the previous value prior to resetting
                 # the options, because resetting the options also resets the value.
@@ -1322,9 +1322,9 @@ class _VizManager:
         return visualization_tab
 
     def _layout_template_change(self, template_type):
-        # check if plot set type requires loaded sim-data
-        # PreReq: The simulation/loaded data is already defined in the
-        # viz_tab_simulation_data_dropdown or viz_tab_loaded_data_dropdown
+        # check if plot set type requires experimental sim-data
+        # PreReq: The simulation/experimental data is already defined in the
+        # viz_tab_simulation_data_dropdown or viz_tab_experimental_data_dropdown
         # we dont do any additional filter here.
         template_name = template_type.new
         if _check_template_type_is_data_dependant(template_name):
@@ -1342,7 +1342,7 @@ class _VizManager:
             self.viz_tab_data_selection.children[0].layout.visibility = "visible"
 
         elif template_name == _VizManager.experimental_data_template:
-            # Repopulate viz_tab_loaded_data_dropdown and hide simulation data dropdown
+            # Repopulate viz_tab_experimental_data_dropdown and hide simulation data dropdown
             experimental_data_names = list(data_store.experimental_data) or [" "]
             self.viz_tab_experimental_data_dropdown.options = experimental_data_names
             self.viz_tab_experimental_data_dropdown.value = experimental_data_names[0]
@@ -1377,7 +1377,7 @@ class _VizManager:
             )
             sim_name = self.widgets[dropdown_key].value
             if sim_name not in available_data:
-                logger.error("No simulation data has been simulated or loaded")
+                logger.error("No simulation data has been simulated")
                 return
 
         ax_plots = None
