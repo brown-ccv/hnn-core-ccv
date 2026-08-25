@@ -1115,7 +1115,7 @@ def _postprocess_template(template_name, fig, idx, use_ipympl=True, widgets=None
 class _VizManager:
     """Class static variable"""
 
-    experimenta_data_template = "Experimental Data - Diapole"
+    experimental_data_template = "Experimental Data - Dipole"
 
     """GUI visualization panel manager class.
 
@@ -1170,7 +1170,7 @@ class _VizManager:
         template_names.extend(list(fig_templates.keys()))
         self.templates_dropdown = Dropdown(
             description="Figure Template:",
-            options=template_names + [_VizManager.experimenta_data_template],
+            options=template_names + [_VizManager.experimental_data_template],
             value=template_names[0],
             style={"description_width": "28%"},
             layout=Layout(width="70%"),
@@ -1341,7 +1341,7 @@ class _VizManager:
             ]
             self.viz_tab_data_selection.children[0].layout.visibility = "visible"
 
-        elif template_name == _VizManager.experimenta_data_template:
+        elif template_name == _VizManager.experimental_data_template:
             # Repopulate viz_tab_loaded_data_dropdown and hide simulation data dropdown
             experimental_data_names = list(data_store.experimental_data) or [" "]
             self.viz_tab_experimental_data_dropdown.options = experimental_data_names
@@ -1365,7 +1365,7 @@ class _VizManager:
         sim_name = None
         template_name = self.widgets["templates_dropdown"].value
         is_data_template = _check_template_type_is_data_dependant(template_name)
-        is_experimental_data = template_name == _VizManager.experimenta_data_template
+        is_experimental_data = template_name == _VizManager.experimental_data_template
         if is_data_template or is_experimental_data:
             dropdown_key = (
                 "dataset_dropdown" if is_data_template else "experimental_data_dropdown"
@@ -1441,7 +1441,7 @@ class _VizManager:
     ## This function resets the state of the templates names list dropdown
     def _simulate_switch_fig_template(self, template_name: str):
         is_experimental_data_entry = (
-            template_name == _VizManager.experimenta_data_template
+            template_name == _VizManager.experimental_data_template
         )
         assert (
             template_name in fig_templates
@@ -1530,12 +1530,12 @@ class _VizManager:
                 widget_index = 1
                 plot_context["is_experimental_data"] = False
             elif simulation_name in data_store.experimental_data_names:
-                # Loaded data widget
+                # Experimental data widget
                 widget_index = 4
                 plot_context["is_experimental_data"] = True
             else:
                 raise RuntimeError(
-                    f"'{simulation_name}' is not in simulated_data_names nor loaded_data_names"
+                    f"'{simulation_name}' is not in simulated_data_names nor experimental_data_names"
                 )
 
             # Select the simulation

@@ -1237,7 +1237,7 @@ def test_gui_upload_csv_simulation(setup_gui):
 
     # we are loading only 1 trial,
     # assume all the data we need is in the [0] position
-    data_lengh = len(data_store.experimental_data["test_default"]["dpls"][0].times)
+    data_length = len(data_store.experimental_data["test_default"]["dpls"][0].times)
 
     assert len(data_store.experimental_data) == 1
     assert "test_default" in data_store.experimental_data.keys()
@@ -1246,15 +1246,15 @@ def test_gui_upload_csv_simulation(setup_gui):
     assert len(gui.viz_manager.data["figs"]) == 1
     assert (
         len(data_store.experimental_data["test_default"]["dpls"][0].data["agg"])
-        == data_lengh
+        == data_length
     )
     assert (
         len(data_store.experimental_data["test_default"]["dpls"][0].data["L2"])
-        == data_lengh
+        == data_length
     )
     assert (
         len(data_store.experimental_data["test_default"]["dpls"][0].data["L5"])
-        == data_lengh
+        == data_length
     )
 
 
@@ -2337,7 +2337,9 @@ def test_viz_tab_dropdown(setup_gui):
 
     # simulate change value of templates_dropdown
     # Test the viz_tab_simulation_data_dropdown is showing by being a child of the container viz_tab_data_selection
-    gui.viz_manager.templates_dropdown.value = gui.viz_manager.experimenta_data_template
+    gui.viz_manager.templates_dropdown.value = (
+        gui.viz_manager.experimental_data_template
+    )
     assert "test_default" in gui.viz_manager.viz_tab_experimental_data_dropdown.options
     assert len(gui.viz_manager.viz_tab_experimental_data_dropdown.options) == 1
     assert (

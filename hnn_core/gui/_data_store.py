@@ -42,7 +42,7 @@ class DataStore(dict):
         )
 
     def reset(self):
-        """Clear all stored simulation/loaded data (i.e. GUI reinitialization)."""
+        """Clear all stored simulation/experimental data (i.e. GUI reinitialization)."""
         self["simulated_data"] = defaultdict(lambda: dict(net=None, dpls=list()))
         self["experimental_data"] = defaultdict(lambda: dict(net=None, dpls=list()))
         self["networks"] = {}
