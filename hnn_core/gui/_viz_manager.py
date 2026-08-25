@@ -1113,10 +1113,6 @@ def _postprocess_template(template_name, fig, idx, use_ipympl=True, widgets=None
 
 
 class _VizManager:
-    """Class static variable"""
-
-    experimental_data_template = "Experimental Data - Dipole"
-
     """GUI visualization panel manager class.
 
     Parameters
@@ -1131,6 +1127,8 @@ class _VizManager:
     data : dict
         A dict of external simulation data object
     """
+
+    experimental_data_template = "Experimental Data - Dipole"
 
     def __init__(self, viz_layout, fig_default_params):
         plt.close("all")
