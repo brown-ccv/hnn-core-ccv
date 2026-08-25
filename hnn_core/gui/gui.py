@@ -810,7 +810,7 @@ class HNNGUI:
 
         # simulation tab buttons
         # --------------------------------------------------
-        self.load_data_button = FileUpload(
+        self.load_experimental_data_button = FileUpload(
             accept=".txt,.csv",
             multiple=False,
             style={"button_color": self.layout["theme_color"]},
@@ -1316,13 +1316,13 @@ class HNNGUI:
                 change, self.layout["drive_textbox"], load_type="drives"
             )
 
-        def _on_upload_data_cb(change):
+        def _on_upload_experimental_data_cb(change):
             ## this function should get data and  take care of the state of the widgets
             # Check state of the widget
             if not change["owner"].value:
                 return
             try:
-                self._on_upload_data(file_path=change["new"][0])
+                self._on_upload_experimental_data(file_path=change["new"][0])
             except Exception:
                 self._simulation_status_bar.value = self._simulation_status_contents[
                     "failed"
@@ -1487,7 +1487,9 @@ class HNNGUI:
         self.run_button.on_click(_run_button_clicked_cb)
         self.run_opt_button.on_click(_run_opt_button_clicked_cb)
 
-        self.load_data_button.observe(_on_upload_data_cb, names="value")
+        self.load_experimental_data_button.observe(
+            _on_upload_experimental_data_cb, names="value"
+        )
         self.simulation_list_widget.observe(_simulation_list_change_cb, "value")
         self.widget_drive_type_selection.observe(_driver_type_change_cb, "value")
 
@@ -1520,7 +1522,7 @@ class HNNGUI:
             (self.widget_opt_scaling, "value"),
         )
 
-    def _on_upload_data(self, file_path):
+    def _on_upload_experimental_data(self, file_path):
         # Parsing path into filename and extension
         data_dict = file_path
         dict_name = data_dict["name"].rsplit(".", 1)
@@ -1528,7 +1530,7 @@ class HNNGUI:
         file_extension = f".{dict_name[1]}"
 
         # If data was already loaded return
-        if data_store.loaded_data.get(data_filename) is not None:
+        if data_store.experimental_data.get(data_filename) is not None:
             with self._log_out:
                 logger.error(f"Found existing data: {data_filename}.")
             return
@@ -1538,7 +1540,7 @@ class HNNGUI:
         ext_content = codecs.decode(ext_content, encoding="utf-8")
         with self._log_out:
             # Write loaded data to data object
-            data_store.loaded_data[data_filename] = {
+            data_store.experimental_data[data_filename] = {
                 "net": None,
                 "dpls": [_read_dipole_txt(io.StringIO(ext_content), file_extension)],
             }
@@ -1572,9 +1574,11 @@ class HNNGUI:
 
     def _update_target_dipole_data_widget(self):
         """refresh gui.opt_target_widgets["target_dipole_data"] dropdown using data_store"""
-        all_loaded_data_names = list(data_store.loaded_data) or [" "]
+        all_experimental_data_names = list(data_store.experimental_data) or [" "]
         prior_value = self.opt_target_widgets["target_dipole_data"].value
-        self.opt_target_widgets["target_dipole_data"].options = all_loaded_data_names
+        self.opt_target_widgets[
+            "target_dipole_data"
+        ].options = all_experimental_data_names
         self.opt_target_widgets["target_dipole_data"].value = prior_value
 
     def _delete_single_drive(self, b):
@@ -1655,7 +1659,7 @@ class HNNGUI:
                         HBox(
                             [
                                 self.run_button,
-                                self.load_data_button,
+                                self.load_experimental_data_button,
                             ]
                         ),
                         HBox(
@@ -2087,9 +2091,9 @@ class HNNGUI:
         return js_string
 
     # below are a series of methods that are used to manipulate the GUI in testing only
-    def _simulate_upload_data(self, file_url):
+    def _simulate_upload_experimental_data(self, file_url):
         uploaded_value = _simulate_prepare_upload_file(file_url)
-        self.load_data_button.set_trait("value", uploaded_value)
+        self.load_experimental_data_button.set_trait("value", uploaded_value)
 
     def _simulate_upload_connectivity(self, file_url):
         uploaded_value = _simulate_prepare_upload_file(file_url)
@@ -5925,7 +5929,7 @@ def run_opt_button_clicked(
     """
     with log_out:
         simulation_data = data_store.simulated_data
-        loaded_data = data_store.loaded_data
+        experimental_data = data_store.experimental_data
         try:
             # Sim data setup (and related input validation)
             # --------------------------------------------------------------------------
@@ -5991,7 +5995,7 @@ def run_opt_button_clicked(
                     # only support usage of single-trial dipole data.
                     sim_data = simulation_data.get(
                         opt_rmse_target_data_name
-                    ) or loaded_data.get(opt_rmse_target_data_name)
+                    ) or experimental_data.get(opt_rmse_target_data_name)
 
                     if not sim_data:
                         raise RuntimeError(f"The {sim_data} value is invalid.")
