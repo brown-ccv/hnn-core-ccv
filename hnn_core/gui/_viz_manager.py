@@ -735,7 +735,7 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_acti
     default_min_frequency = fig_default_params["default_min_frequency"]
     default_max_frequency = fig_default_params["default_max_frequency"]
     # Not None last simulation.
-    # Altought, the previos position to `None`` is `simulation_names[-2]`
+    # Although, the previous position to `None`` is `simulation_names[-2]`
     # on an edge case this could not be true. So for good code practices let's
     # iterate the tuple in reverse looking for first sim_name that is not `None`
     last_simulation_data = next(
