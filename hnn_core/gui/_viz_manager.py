@@ -30,6 +30,7 @@ from hnn_core.gui._logging import logger
 from hnn_core.network_models import default_drive_colors
 from hnn_core.viz import plot_dipole, plot_tfr_morlet
 from hnn_core.gui._data_store import data_store
+from enum import Enum
 
 #
 _fig_placeholder = HTML(
@@ -102,7 +103,7 @@ fig_templates = {
     },
 }
 
-data_templates = {
+sim_data_templates = {
     "Drive-Dipole (2x1)": {
         "kwargs": {"gridspec_kw": {"height_ratios": [1, 3]}},
         "mosaic": "00\n11",
@@ -153,18 +154,24 @@ data_templates = {
 }
 
 
-def check_sim_plot_types(new_sim_name, plot_type_selection, target_selection):
-    if new_sim_name in data_store.experimental_data_names:
-        plot_type_selection.options = [
+class UiAction(str, Enum):
+    NONE = ""
+    RUN_SIMULATION = "run_simulation"
+    UPLOAD_EXPERIMENTAL_DATA = "upload_data"
+    MAKE_FIGURE_BUTTON = "make_figure_button"
+
+
+def set_plot_types_options(data_name, plot_type_selection_dropdown):
+    if data_name in data_store.experimental_data_names:
+        plot_type_selection_dropdown.options = [
             pt for pt in _plot_types if pt not in _ext_data_disabled_plot_types
         ]
-        target_selection.value = "None"
     else:
-        plot_type_selection.options = _plot_types
+        plot_type_selection_dropdown.options = _plot_types
 
 
-def _check_template_type_is_data_dependant(template_name):
-    sim_data_options = list(data_templates.keys())
+def _check_template_type_is_sim_data_dependant(template_name):
+    sim_data_options = list(sim_data_templates.keys())
     return template_name in sim_data_options
 
 
@@ -725,33 +732,17 @@ def _clear_axis(
         _dynamic_rerender(fig)
 
 
-def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_action):
+def _build_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_action):
     analysis_style = {"description_width": "200px"}
     layout = Layout(width="98%")
 
     simulation_names = tuple(data_store.simulated_data) + ("None",)
+    target_names = tuple(data_store.experimental_data) + ("None",)
 
     default_smoothing = fig_default_params["default_smoothing"]
     default_scaling = fig_default_params["default_scaling"]
     default_min_frequency = fig_default_params["default_min_frequency"]
     default_max_frequency = fig_default_params["default_max_frequency"]
-    # Not None last simulation.
-    # Although, the previous position to `None`` is `simulation_names[-2]`
-    # on an edge case this could not be true. So for good code practices let's
-    # iterate the tuple in reverse looking for first sim_name that is not `None`
-    last_simulation_data = next(
-        (sim_name for sim_name in reversed(simulation_names) if sim_name != "None"),
-        None,
-    )
-
-    simulation_selection = Dropdown(
-        options=simulation_names,
-        value=last_simulation_data,
-        description="Simulation Data:",
-        disabled=False,
-        layout=layout,
-        style=analysis_style,
-    )
 
     plot_type_selection = Dropdown(
         options=_plot_types,
@@ -762,34 +753,27 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_acti
         style=analysis_style,
     )
 
-    target_names = tuple(data_store.experimental_data) + ("None",)
-    last_target_data = next(
-        (
-            target_name
-            for target_name in reversed(target_names)
-            if target_name != "None"
-        ),
-        None,
+    init_sim_data_name, init_experimental_data_name = _get_dropdowns_initial_values(
+        widgets, ui_action, simulation_names, target_names, plot_type_selection
     )
-    target_data_selection = Dropdown(
-        options=target_names,
-        value="None",
-        description="Experimental Data:",
+
+    simulation_selection = Dropdown(
+        options=simulation_names,
+        value=init_sim_data_name,
+        description="Simulation Data:",
         disabled=False,
         layout=layout,
         style=analysis_style,
     )
 
-    # This will check the sim plot types dropdown available options
-    # for the specific sim name in the simulation_selection dropdown options
-    if ui_action == "run_simulation":
-        check_sim_plot_types(
-            last_simulation_data, plot_type_selection, target_data_selection
-        )
-    elif ui_action == "upload_data":
-        check_sim_plot_types(
-            last_target_data, plot_type_selection, target_data_selection
-        )
+    target_data_selection = Dropdown(
+        options=target_names,
+        value=init_experimental_data_name,
+        description="Experimental Data:",
+        disabled=False,
+        layout=layout,
+        style=analysis_style,
+    )
 
     spectrogram_colormap_selection = Dropdown(
         description="Spectrogram Colormap:",
@@ -875,9 +859,7 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_acti
     clear_button = Button(description="Clear axis")
 
     def _on_sim_data_change(new_sim_name):
-        return check_sim_plot_types(
-            new_sim_name.new, plot_type_selection, target_data_selection
-        )
+        return set_plot_types_options(new_sim_name.new, plot_type_selection)
 
     def _on_target_comparison_change(new_target_name):
         return target_comparison_change(new_target_name, simulation_selection, data)
@@ -954,6 +936,55 @@ def _get_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_acti
     return vbox
 
 
+def _get_dropdowns_initial_values(
+    widgets, ui_action, simulation_names, target_names, plot_type_selection
+):
+    init_sim_data_name = None
+    init_experimental_data_name = None
+    # This will check the sim plot types dropdown available options
+    # for the specific sim name in the simulation_selection dropdown options
+    if ui_action == UiAction.RUN_SIMULATION:
+        init_experimental_data_name = "None"
+        # get last run simulation saved in data store
+        init_sim_data_name = next(
+            (sim_name for sim_name in reversed(simulation_names) if sim_name != "None"),
+            None,
+        )
+        set_plot_types_options(init_sim_data_name, plot_type_selection)
+    elif ui_action == UiAction.UPLOAD_EXPERIMENTAL_DATA:
+        init_sim_data_name = "None"
+        init_experimental_data_name = next(
+            (
+                target_name
+                for target_name in reversed(target_names)
+                if target_name != "None"
+            ),
+            None,
+        )
+        set_plot_types_options(init_experimental_data_name, plot_type_selection)
+    elif ui_action == UiAction.MAKE_FIGURE_BUTTON:
+        # Retrieve Template name and simulation or experimental data name
+        template_type = widgets["templates_dropdown"].value
+        if _check_template_type_is_sim_data_dependant(template_type):
+            init_sim_data_name = widgets["dataset_dropdown"].value
+            init_experimental_data_name = "None"
+        ##
+        # a string literal is used because the function has a module-level scope,
+        # and in order to access the _VizManager._experimental_data_template member variable, an instance needs
+        # to be passed as argument through all the chain of calls until it reaches this one.
+        # This would have been an excellent case for using the static class variable
+        #  _VizManager._experimental_data_template
+        elif template_type == "Experimental Data - Dipole":
+            init_sim_data_name = "None"
+            init_experimental_data_name = widgets["experimental_data_dropdown"].value
+        else:
+            ## Asume it's blank figure
+            init_sim_data_name = "None"
+            init_experimental_data_name = "None"
+
+    return init_sim_data_name, init_experimental_data_name
+
+
 def _close_figure(b, widgets, data, fig_idx):
     fig_related_widgets = [widgets["figs_tabs"], widgets["axes_config_tabs"]]
     for w_idx, tab in enumerate(fig_related_widgets):
@@ -997,7 +1028,7 @@ def _add_axes_controls(widgets, data, fig_default_params, fig, axd, ui_action):
 
     controls = Tab()
     children = [
-        _get_ax_control(
+        _build_ax_control(
             widgets,
             data,
             fig_default_params,
@@ -1037,7 +1068,7 @@ def _add_figure(
     template_type,
     scale=0.95,
     dpi=96,
-    ui_action="",
+    ui_action=UiAction.NONE,
 ):
     fig_idx = data["fig_idx"]["idx"]
 
@@ -1164,7 +1195,7 @@ class _VizManager:
             (self.figs_tabs, "selected_index"),
         )
 
-        template_names = list(data_templates.keys())
+        template_names = list(sim_data_templates.keys())
         template_names.extend(list(fig_templates.keys()))
         self.templates_dropdown = Dropdown(
             description="Figure Template:",
@@ -1181,7 +1212,10 @@ class _VizManager:
             style={"button_color": self.viz_layout["theme_color"]},
             layout=self.viz_layout["btn"],
         ).add_class("make-fig-btn")
-        self.make_fig_button.on_click(self.add_figure)
+
+        self.make_fig_button.on_click(
+            partial(self.add_figure, ui_action=UiAction.MAKE_FIGURE_BUTTON)
+        )
 
         self.viz_tab_simulation_data_dropdown = Dropdown(
             description="Simulation Data:",
@@ -1202,7 +1236,7 @@ class _VizManager:
         # data
         self.fig_idx = {"idx": 1}
         self.figs = {}
-        self.last_action = ""
+        self.last_action = UiAction.NONE
 
     @property
     def widgets(self):
@@ -1325,7 +1359,7 @@ class _VizManager:
         # viz_tab_simulation_data_dropdown or viz_tab_experimental_data_dropdown
         # we dont do any additional filter here.
         template_name = template_type.new
-        if _check_template_type_is_data_dependant(template_name):
+        if _check_template_type_is_sim_data_dependant(template_name):
             # Add only simulated data
             # list automatically loops through the keys and appends them
             # or falls back to a list containing a single space string
@@ -1354,7 +1388,7 @@ class _VizManager:
             self.viz_tab_data_selection.children[0].layout.visibility = "hidden"
 
     @unlink_relink(attribute="figs_config_tab_link")
-    def add_figure(self, b=None):
+    def add_figure(self, b=None, ui_action=None):
         """Add a figure and corresponding config tabs to the dashboard."""
         if not data_store.all_data_names:
             logger.error("No data has been simulated or loaded")
@@ -1362,15 +1396,17 @@ class _VizManager:
 
         sim_name = None
         template_name = self.widgets["templates_dropdown"].value
-        is_data_template = _check_template_type_is_data_dependant(template_name)
+        is_sim_data_template = _check_template_type_is_sim_data_dependant(template_name)
         is_experimental_data = template_name == self._experimental_data_template
-        if is_data_template or is_experimental_data:
+        if is_sim_data_template or is_experimental_data:
             dropdown_key = (
-                "dataset_dropdown" if is_data_template else "experimental_data_dropdown"
+                "dataset_dropdown"
+                if is_sim_data_template
+                else "experimental_data_dropdown"
             )
             available_data = (
                 data_store.simulated_data
-                if is_data_template
+                if is_sim_data_template
                 else data_store.experimental_data
             )
             sim_name = self.widgets[dropdown_key].value
@@ -1381,15 +1417,21 @@ class _VizManager:
         ax_plots = None
         preprocessing_config = None
         # Use data_templates dictionary if it's a data dependent layout
-        if is_data_template:
-            template_type = data_templates[template_name]
-            ax_plots = data_templates[template_name]["ax_plots"]
+        if is_sim_data_template:
+            template_type = sim_data_templates[template_name]
+            ax_plots = sim_data_templates[template_name]["ax_plots"]
         elif is_experimental_data:
             template_type = fig_templates["[Blank] single figure"]
             ax_plots = [("ax0", "current dipole")]
             preprocessing_config = {"dipole_smooth": 0, "dipole_scaling": 1}
         else:
             template_type = fig_templates[template_name]
+
+        # "make figure" clicks are temporary.
+        #   don't let them use last_action (run_simulation and upload data)
+        action_for_figure = (
+            ui_action if ui_action == UiAction.MAKE_FIGURE_BUTTON else self.last_action
+        )
 
         # Add empty figure according to template arguments
         _add_figure(
@@ -1400,7 +1442,7 @@ class _VizManager:
             template_type,
             scale=0.97,
             dpi=self.viz_layout["dpi"],
-            ui_action=self.last_action,
+            ui_action=action_for_figure,
         )
 
         # Plot data
@@ -1441,7 +1483,7 @@ class _VizManager:
         is_experimental_data_entry = template_name == self._experimental_data_template
         assert (
             template_name in fig_templates
-            or template_name in data_templates
+            or template_name in sim_data_templates
             or is_experimental_data_entry
         ), "No such template"
 
@@ -1515,10 +1557,10 @@ class _VizManager:
             buttons = ax_control_tabs.children[ax_idx].children[-2]
             plot_context = buttons.children[0].plot_context
 
-            if self.last_action == "upload_data":
+            if self.last_action == UiAction.UPLOAD_EXPERIMENTAL_DATA:
                 widget_index = 4
                 plot_context["is_experimental_data"] = True
-            elif self.last_action == "run_simulation":
+            elif self.last_action == UiAction.RUN_SIMULATION:
                 widget_index = 1
                 plot_context["is_experimental_data"] = False
             elif simulation_name in data_store.simulated_data_names:

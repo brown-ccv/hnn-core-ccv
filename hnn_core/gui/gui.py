@@ -54,7 +54,7 @@ from hnn_core.gui._logging import logger
 from hnn_core.gui._data_store import data_store
 
 # from hnn_core.gui._gui_utils import clear_empty_trash_simulations
-from hnn_core.gui._viz_manager import _idx2figname, _VizManager
+from hnn_core.gui._viz_manager import _idx2figname, _VizManager, UiAction
 from hnn_core.hnn_io import dict_to_network, write_network_configuration
 from hnn_core.network import pick_connection, _check_global_synaptic_gains_uniformity
 from hnn_core.optimization import Optimizer, generate_opt_history_table
@@ -1550,7 +1550,7 @@ class HNNGUI:
             _template_name = "[Blank] single figure"
 
             # Keep track of this action
-            self.viz_manager.last_action = "upload_data"
+            self.viz_manager.last_action = UiAction.UPLOAD_EXPERIMENTAL_DATA
 
             # there is no pointer to gui on this function.
             # so we can't update the gui.opt_target_widgets["target_dipole_data"]
@@ -1570,11 +1570,11 @@ class HNNGUI:
                 preprocessing_config=process_configs,
                 operation="plot",
             )
-            self.viz_manager.last_action = ""
+            self.viz_manager.last_action = UiAction.NONE
 
     def _update_target_dipole_data_widget(self):
         """refresh gui.opt_target_widgets["target_dipole_data"] dropdown using data_store"""
-        all_experimental_data_names = list(data_store.experimental_data) or [" "]
+        all_experimental_data_names = list(data_store.experimental_data)
         prior_value = self.opt_target_widgets["target_dipole_data"].value
         self.opt_target_widgets[
             "target_dipole_data"
@@ -4992,7 +4992,7 @@ def run_button_clicked(
                 simulations_list_widget.options = sim_names
                 simulations_list_widget.value = sim_names[0]
 
-            viz_manager.last_action = "run_simulation"
+            viz_manager.last_action = UiAction.RUN_SIMULATION
             viz_manager.reset_fig_config_tabs()
 
             # update default visualization params in gui based on widget
@@ -5021,7 +5021,7 @@ def run_button_clicked(
             logger.error(traceback.format_exc())
             return
         finally:
-            viz_manager.last_action = ""
+            viz_manager.last_action = UiAction.NONE
 
 
 def _update_cell_params_vbox(
