@@ -80,7 +80,7 @@ _spectrogram_color_maps = [
     "cividis",
 ]
 
-fig_templates = {
+blank_templates = {
     "[Blank] 2row x 1col (1:3)": {
         "kwargs": {"gridspec_kw": {"height_ratios": [1, 3]}},
         "mosaic": "00\n11",
@@ -152,6 +152,8 @@ sim_data_templates = {
         ],
     },
 }
+
+_experimental_data_template = ["Experimental Data - Dipole"]
 
 
 class UiAction(str, Enum):
@@ -512,9 +514,9 @@ def _avg_dipole_check(dpls):
 
 def _plot_on_axes(
     button,
-    simulations_widget,
-    widgets_plot_type,
-    data_widget,
+    simulations_data_widget,
+    plot_type_widget,
+    experimental_data_widget,
     spectrogram_colormap_selection,
     hide_spike_legend,
     marker_size,
@@ -577,9 +579,9 @@ def _plot_on_axes(
         A VBox widget that contains all the existing plots.
     """
     sim_name = (
-        data_widget.value
+        experimental_data_widget.value
         if plot_context.get("is_experimental_data")
-        else simulations_widget.value
+        else simulations_data_widget.value
     )
 
     ## It must look up both run_data and laoded_data dicts for sim_name
@@ -587,14 +589,15 @@ def _plot_on_axes(
     single_simulation = data_store.simulated_data.get(
         sim_name
     ) or data_store.experimental_data.get(sim_name)
+    assert single_simulation, f"{sim_name} not found in simulation or experimental data"
 
-    plot_type = widgets_plot_type.value
+    plot_type = plot_type_widget.value
     # disable 'add plots' button for types that do not support overlay
     if plot_type in _no_overlay_plot_types:
         button.disabled = True
 
     # freeze plot type
-    widgets_plot_type.disabled = True
+    plot_type_widget.disabled = True
 
     simulation_plot_config = {
         "dipole_scaling": dipole_scaling.value,
@@ -614,10 +617,10 @@ def _plot_on_axes(
     # we need to plot the target dipole as well.
     if (
         not plot_context.get("is_experimental_data")
-        and data_widget.value in data_store.experimental_data_names
+        and experimental_data_widget.value in data_store.experimental_data_names
         and plot_type == "current dipole"
     ):
-        target_sim_name = data_widget.value
+        target_sim_name = experimental_data_widget.value
         target_sim = data_store.simulated_data.get(
             target_sim_name
         ) or data_store.experimental_data.get(target_sim_name)
@@ -888,9 +891,9 @@ def _build_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_ac
     plot_button.on_click(
         partial(
             _plot_on_axes,
-            simulations_widget=simulation_selection,
-            widgets_plot_type=plot_type_selection,
-            data_widget=target_data_selection,
+            simulations_data_widget=simulation_selection,
+            plot_type_widget=plot_type_selection,
+            experimental_data_widget=target_data_selection,
             spectrogram_colormap_selection=spectrogram_colormap_selection,
             hide_spike_legend=hide_spike_legend,
             marker_size=marker_size,
@@ -968,13 +971,7 @@ def _get_dropdowns_initial_values(
         if _check_template_type_is_sim_data_dependant(template_type):
             init_sim_data_name = widgets["dataset_dropdown"].value
             init_experimental_data_name = "None"
-        ##
-        # a string literal is used because the function has a module-level scope,
-        # and in order to access the _VizManager._experimental_data_template member variable, an instance needs
-        # to be passed as argument through all the chain of calls until it reaches this one.
-        # This would have been an excellent case for using the static class variable
-        #  _VizManager._experimental_data_template
-        elif template_type == "Experimental Data - Dipole":
+        elif template_type == _experimental_data_template:
             init_sim_data_name = "None"
             init_experimental_data_name = widgets["experimental_data_dropdown"].value
         else:
@@ -1162,7 +1159,7 @@ class _VizManager:
 
     def __init__(self, viz_layout, fig_default_params):
         plt.close("all")
-        self._experimental_data_template = "Experimental Data - Dipole"
+
         self.viz_layout = viz_layout
         self.fig_default_params = fig_default_params
 
@@ -1196,10 +1193,10 @@ class _VizManager:
         )
 
         template_names = list(sim_data_templates.keys())
-        template_names.extend(list(fig_templates.keys()))
+        template_names.extend(list(blank_templates.keys()))
         self.templates_dropdown = Dropdown(
             description="Figure Template:",
-            options=template_names + [self._experimental_data_template],
+            options=template_names + [_experimental_data_template],
             value=template_names[0],
             style={"description_width": "28%"},
             layout=Layout(width="70%"),
@@ -1261,7 +1258,7 @@ class _VizManager:
         }
 
     def reset_fig_config_tabs(self, template_name=None):
-        """Reset the figure config tabs with most recent simulation data."""
+        """Reset the figure config tabs with most recent data."""
 
         for tab in self.axes_config_tabs.children:
             controls = tab.children[1]
@@ -1294,7 +1291,7 @@ class _VizManager:
 
         # recover the default layout
         if template_name is None:
-            template_name = list(fig_templates.keys())[0]
+            template_name = list(blank_templates.keys())[0]
         self._simulate_switch_fig_template(template_name)
 
     def build_visualization_window(self):
@@ -1373,7 +1370,7 @@ class _VizManager:
             ]
             self.viz_tab_data_selection.children[0].layout.visibility = "visible"
 
-        elif template_name == self._experimental_data_template:
+        elif template_name == _experimental_data_template:
             # Repopulate viz_tab_experimental_data_dropdown and hide simulation data dropdown
             experimental_data_names = list(data_store.experimental_data) or [" "]
             self.viz_tab_experimental_data_dropdown.options = experimental_data_names
@@ -1397,7 +1394,7 @@ class _VizManager:
         sim_name = None
         template_name = self.widgets["templates_dropdown"].value
         is_sim_data_template = _check_template_type_is_sim_data_dependant(template_name)
-        is_experimental_data = template_name == self._experimental_data_template
+        is_experimental_data = template_name == _experimental_data_template
         if is_sim_data_template or is_experimental_data:
             dropdown_key = (
                 "dataset_dropdown"
@@ -1421,11 +1418,11 @@ class _VizManager:
             template_type = sim_data_templates[template_name]
             ax_plots = sim_data_templates[template_name]["ax_plots"]
         elif is_experimental_data:
-            template_type = fig_templates["[Blank] single figure"]
+            template_type = blank_templates["[Blank] single figure"]
             ax_plots = [("ax0", "current dipole")]
             preprocessing_config = {"dipole_smooth": 0, "dipole_scaling": 1}
         else:
-            template_type = fig_templates[template_name]
+            template_type = blank_templates[template_name]
 
         # "make figure" clicks are temporary.
         #   don't let them use last_action (run_simulation and upload data)
@@ -1480,9 +1477,9 @@ class _VizManager:
 
     ## This function resets the state of the templates names list dropdown
     def _simulate_switch_fig_template(self, template_name: str):
-        is_experimental_data_entry = template_name == self._experimental_data_template
+        is_experimental_data_entry = template_name == _experimental_data_template
         assert (
-            template_name in fig_templates
+            template_name in blank_templates
             or template_name in sim_data_templates
             or is_experimental_data_entry
         ), "No such template"

@@ -27,6 +27,7 @@ from hnn_core.gui._viz_manager import (
     _plot_types,
     _no_overlay_plot_types,
     unlink_relink,
+    _experimental_data_template,
 )
 from hnn_core.gui.gui import (
     _GUI_PrintToLogger,
@@ -2337,9 +2338,8 @@ def test_viz_tab_dropdown(setup_gui):
 
     # simulate change value of templates_dropdown
     # Test the viz_tab_simulation_data_dropdown is showing by being a child of the container viz_tab_data_selection
-    gui.viz_manager.templates_dropdown.value = (
-        gui.viz_manager._experimental_data_template
-    )
+    gui.viz_manager.templates_dropdown.value = _experimental_data_template
+
     assert "test_default" in gui.viz_manager.viz_tab_experimental_data_dropdown.options
     assert len(gui.viz_manager.viz_tab_experimental_data_dropdown.options) == 1
     assert (
