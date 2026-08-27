@@ -1558,23 +1558,16 @@ class _VizManager:
             plot_context = buttons.children[0].plot_context
 
             if self.last_action == UiAction.UPLOAD_EXPERIMENTAL_DATA:
-                widget_index = 4
-                plot_context["is_experimental_data"] = True
+                is_experimental_data = True
             elif self.last_action == UiAction.RUN_SIMULATION:
-                widget_index = 1
-                plot_context["is_experimental_data"] = False
-            elif simulation_name in data_store.simulated_data_names:
-                # Simulation data widget
-                widget_index = 1
-                plot_context["is_experimental_data"] = False
-            elif simulation_name in data_store.experimental_data_names:
-                # Experimental data widget
-                widget_index = 4
-                plot_context["is_experimental_data"] = True
+                is_experimental_data = False
             else:
-                raise RuntimeError(
-                    f"'{simulation_name}' is not in simulated_data_names nor experimental_data_names"
+                is_experimental_data = (
+                    simulation_name in data_store.experimental_data_names
                 )
+
+            plot_context["is_experimental_data"] = is_experimental_data
+            widget_index = 4 if is_experimental_data else 1
 
             # Select the simulation
             simulation_selector = ax_control_tabs.children[ax_idx].children[
