@@ -2444,3 +2444,44 @@ def test_axe_control_dropdowns(setup_gui):
     assert target_data_selection.value == "test_default"
 
     plt.close("all")
+
+
+def test_target_comparison_change_disables_plot_type(setup_gui):
+    """Test that picking an experimental dataset to compare against disables
+    the plot type dropdown, and picking "None" re-enables it."""
+
+    gui = setup_gui
+
+    sim_name = "sim1"
+    gui.widget_simulation_name.value = sim_name
+    gui.run_button.click()
+
+    file_path = assets_path / "test_default.csv"
+    gui._simulate_upload_experimental_data(file_path)
+
+    gui._simulate_viz_action("switch_fig_template", "[Blank] single figure")
+    gui._simulate_viz_action("add_fig")
+
+    figid = gui.viz_manager.fig_idx["idx"] - 1
+    figname = f"Figure {figid}"
+    axname = "ax0"
+
+    tab = gui.viz_manager.axes_config_tabs
+    fig_tab_idx = tab.titles.index(figname)
+    ax_control_tabs = tab.children[fig_tab_idx].children[1]
+    ax_idx = ax_control_tabs.titles.index(axname)
+    ax_control = ax_control_tabs.children[ax_idx]
+
+    plot_type_selection = ax_control.children[0]
+    target_data_selection = ax_control.children[4]
+
+    assert target_data_selection.value == "None"
+    assert plot_type_selection.disabled is False
+
+    target_data_selection.value = "test_default"
+    assert plot_type_selection.disabled is True
+
+    target_data_selection.value = "None"
+    assert plot_type_selection.disabled is False
+
+    plt.close("all")

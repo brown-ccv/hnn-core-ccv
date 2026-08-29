@@ -177,16 +177,16 @@ def _check_template_type_is_sim_data_dependant(template_name):
     return template_name in sim_data_options
 
 
-def target_comparison_change(new_target_name, simulation_selection, data):
-    """Triggered when the target data is turned on or changed."""
-    pass
+def experimental_data_change(new_experimental_data_name, plot_type_selection):
+    """Only enable plot_type_selection when experimenta_data dropdown is 'None'"""
+    plot_type_selection.disabled = new_experimental_data_name != "None"
 
 
-def plot_type_coupled_change(new_plot_type, target_data_selection):
+def plot_type_coupled_change(new_plot_type, experimental_data_selection):
     if new_plot_type != "current dipole":
-        target_data_selection.disabled = True
+        experimental_data_selection.disabled = True
     else:
-        target_data_selection.disabled = False
+        experimental_data_selection.disabled = False
 
 
 def unlink_relink(attribute):
@@ -578,7 +578,7 @@ def _plot_on_axes(
     existing_plots : ipywidgets.VBox
         A VBox widget that contains all the existing plots.
     """
-    sim_name = (
+    data_to_plot = (
         experimental_data_widget.value
         if plot_context.get("is_experimental_data")
         else simulations_data_widget.value
@@ -587,9 +587,11 @@ def _plot_on_axes(
     ## It must look up both run_data and laoded_data dicts for sim_name
     ## Maybe throw exception if there's no simulation?
     single_simulation = data_store.simulated_data.get(
-        sim_name
-    ) or data_store.experimental_data.get(sim_name)
-    assert single_simulation, f"{sim_name} not found in simulation or experimental data"
+        data_to_plot
+    ) or data_store.experimental_data.get(data_to_plot)
+    assert single_simulation, (
+        f"{data_to_plot} not found in simulation or experimental data"
+    )
 
     plot_type = plot_type_widget.value
     # disable 'add plots' button for types that do not support overlay
@@ -610,7 +612,7 @@ def _plot_on_axes(
     }
 
     dpls_processed = _update_ax(
-        fig, ax, single_simulation, sim_name, plot_type, simulation_plot_config
+        fig, ax, single_simulation, data_to_plot, plot_type, simulation_plot_config
     )
 
     # If target_simulations is not None and we are plotting a dipole,
@@ -650,8 +652,8 @@ def _plot_on_axes(
         rmse = _rmse(dpl, target_dpl_processed, t0, tstop)
         corr = 1 - _anticorr(dpl, target_dpl_processed, t0, tstop)
         annotation_text = (
-            f"RMSE({sim_name}, {target_sim_name}): {rmse:.4f}\n"
-            f"Corr({sim_name}, {target_sim_name}): {corr:.4f}"
+            f"RMSE({data_to_plot}, {target_sim_name}): {rmse:.4f}\n"
+            f"Corr({data_to_plot}, {target_sim_name}): {corr:.4f}"
         )
 
         # find subplot's annotation
@@ -676,7 +678,7 @@ def _plot_on_axes(
 
         metrics_logger_text = (
             f"RMSE {rmse:.4f} Corr {corr:.4f} ("
-            f"{sim_name} smooth:{dipole_smooth.value} "
+            f"{data_to_plot} smooth:{dipole_smooth.value} "
             f"scale:{dipole_scaling.value} \n"
             f"{target_sim_name} smooth:{data_smooth.value} "
             f"scale:{data_scaling.value})"
@@ -687,8 +689,8 @@ def _plot_on_axes(
     existing_plots.children = (
         *existing_plots.children,
         Label(
-            f"{sim_name}: {plot_type}",
-            description=f"{sim_name}: {plot_type}",
+            f"{data_to_plot}: {plot_type}",
+            description=f"{data_to_plot}: {plot_type}",
         ).add_class("hide-label"),
     )
     if data["use_ipympl"] is False:
@@ -769,7 +771,7 @@ def _build_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_ac
         style=analysis_style,
     )
 
-    target_data_selection = Dropdown(
+    experimental_data_selection = Dropdown(
         options=target_names,
         value=init_experimental_data_name,
         description="Experimental Data:",
@@ -864,14 +866,18 @@ def _build_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_ac
     def _on_sim_data_change(new_sim_name):
         return set_plot_types_options(new_sim_name.new, plot_type_selection)
 
-    def _on_target_comparison_change(new_target_name):
-        return target_comparison_change(new_target_name, simulation_selection, data)
+    def _on_experimental_data_comparison_change(new_experimental_data_option):
+        return experimental_data_change(
+            new_experimental_data_option.new, plot_type_selection
+        )
 
     def _on_plot_type_change(new_plot_type):
-        return plot_type_coupled_change(new_plot_type.new, target_data_selection)
+        return plot_type_coupled_change(new_plot_type.new, experimental_data_selection)
 
     simulation_selection.observe(_on_sim_data_change, "value")
-    target_data_selection.observe(_on_target_comparison_change, "value")
+    experimental_data_selection.observe(
+        _on_experimental_data_comparison_change, "value"
+    )
     plot_type_selection.observe(_on_plot_type_change, "value")
 
     clear_button.on_click(
@@ -893,7 +899,7 @@ def _build_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_ac
             _plot_on_axes,
             simulations_data_widget=simulation_selection,
             plot_type_widget=plot_type_selection,
-            experimental_data_widget=target_data_selection,
+            experimental_data_widget=experimental_data_selection,
             spectrogram_colormap_selection=spectrogram_colormap_selection,
             hide_spike_legend=hide_spike_legend,
             marker_size=marker_size,
@@ -919,7 +925,7 @@ def _build_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_ac
             simulation_selection,
             simulation_dipole_smooth,
             simulation_dipole_scaling,
-            target_data_selection,
+            experimental_data_selection,
             data_dipole_smooth,
             data_dipole_scaling,
             min_spectral_frequency,
