@@ -54,7 +54,7 @@ from hnn_core.gui._logging import logger
 from hnn_core.gui._data_store import data_store
 
 # from hnn_core.gui._gui_utils import clear_empty_trash_simulations
-from hnn_core.gui._viz_manager import _idx2figname, _VizManager
+from hnn_core.gui._viz_manager import _idx2figname, _VizManager, UiAction
 from hnn_core.hnn_io import dict_to_network, write_network_configuration
 from hnn_core.network import pick_connection, _check_global_synaptic_gains_uniformity
 from hnn_core.optimization import Optimizer, generate_opt_history_table
@@ -810,7 +810,7 @@ class HNNGUI:
 
         # simulation tab buttons
         # --------------------------------------------------
-        self.load_data_button = FileUpload(
+        self.load_experimental_data_button = FileUpload(
             accept=".txt,.csv",
             multiple=False,
             style={"button_color": self.layout["theme_color"]},
@@ -1316,13 +1316,13 @@ class HNNGUI:
                 change, self.layout["drive_textbox"], load_type="drives"
             )
 
-        def _on_upload_data_cb(change):
+        def _on_upload_experimental_data_cb(change):
             ## this function should get data and  take care of the state of the widgets
             # Check state of the widget
             if not change["owner"].value:
                 return
             try:
-                self._on_upload_data(file_path=change["new"][0])
+                self._on_upload_experimental_data(file_path=change["new"][0])
             except Exception:
                 self._simulation_status_bar.value = self._simulation_status_contents[
                     "failed"
@@ -1487,7 +1487,9 @@ class HNNGUI:
         self.run_button.on_click(_run_button_clicked_cb)
         self.run_opt_button.on_click(_run_opt_button_clicked_cb)
 
-        self.load_data_button.observe(_on_upload_data_cb, names="value")
+        self.load_experimental_data_button.observe(
+            _on_upload_experimental_data_cb, names="value"
+        )
         self.simulation_list_widget.observe(_simulation_list_change_cb, "value")
         self.widget_drive_type_selection.observe(_driver_type_change_cb, "value")
 
@@ -1520,7 +1522,7 @@ class HNNGUI:
             (self.widget_opt_scaling, "value"),
         )
 
-    def _on_upload_data(self, file_path):
+    def _on_upload_experimental_data(self, file_path):
         # Parsing path into filename and extension
         data_dict = file_path
         dict_name = data_dict["name"].rsplit(".", 1)
@@ -1528,7 +1530,7 @@ class HNNGUI:
         file_extension = f".{dict_name[1]}"
 
         # If data was already loaded return
-        if data_store.loaded_data.get(data_filename) is not None:
+        if data_store.experimental_data.get(data_filename) is not None:
             with self._log_out:
                 logger.error(f"Found existing data: {data_filename}.")
             return
@@ -1538,7 +1540,7 @@ class HNNGUI:
         ext_content = codecs.decode(ext_content, encoding="utf-8")
         with self._log_out:
             # Write loaded data to data object
-            data_store.loaded_data[data_filename] = {
+            data_store.experimental_data[data_filename] = {
                 "net": None,
                 "dpls": [_read_dipole_txt(io.StringIO(ext_content), file_extension)],
             }
@@ -1546,6 +1548,9 @@ class HNNGUI:
 
             # Create a dipole plot
             _template_name = "[Blank] single figure"
+
+            # Keep track of this action
+            self.viz_manager.last_action = UiAction.UPLOAD_EXPERIMENTAL_DATA
 
             # there is no pointer to gui on this function.
             # so we can't update the gui.opt_target_widgets["target_dipole_data"]
@@ -1565,12 +1570,15 @@ class HNNGUI:
                 preprocessing_config=process_configs,
                 operation="plot",
             )
+            self.viz_manager.last_action = UiAction.NONE
 
     def _update_target_dipole_data_widget(self):
         """refresh gui.opt_target_widgets["target_dipole_data"] dropdown using data_store"""
-        all_loaded_data_names = list(data_store.loaded_data) or [" "]
+        all_experimental_data_names = list(data_store.experimental_data)
         prior_value = self.opt_target_widgets["target_dipole_data"].value
-        self.opt_target_widgets["target_dipole_data"].options = all_loaded_data_names
+        self.opt_target_widgets[
+            "target_dipole_data"
+        ].options = all_experimental_data_names
         self.opt_target_widgets["target_dipole_data"].value = prior_value
 
     def _delete_single_drive(self, b):
@@ -1651,7 +1659,7 @@ class HNNGUI:
                         HBox(
                             [
                                 self.run_button,
-                                self.load_data_button,
+                                self.load_experimental_data_button,
                             ]
                         ),
                         HBox(
@@ -2083,9 +2091,9 @@ class HNNGUI:
         return js_string
 
     # below are a series of methods that are used to manipulate the GUI in testing only
-    def _simulate_upload_data(self, file_url):
+    def _simulate_upload_experimental_data(self, file_url):
         uploaded_value = _simulate_prepare_upload_file(file_url)
-        self.load_data_button.set_trait("value", uploaded_value)
+        self.load_experimental_data_button.set_trait("value", uploaded_value)
 
     def _simulate_upload_connectivity(self, file_url):
         uploaded_value = _simulate_prepare_upload_file(file_url)
@@ -4984,6 +4992,7 @@ def run_button_clicked(
                 simulations_list_widget.options = sim_names
                 simulations_list_widget.value = sim_names[0]
 
+            viz_manager.last_action = UiAction.RUN_SIMULATION
             viz_manager.reset_fig_config_tabs()
 
             # update default visualization params in gui based on widget
@@ -4997,6 +5006,9 @@ def run_button_clicked(
                 viz_manager.fig_default_params[widget] = value
 
             viz_manager.add_figure()
+            # By default the value in fig_templates dropdown is fig_templates[0]
+            # So  viz_manager.add_figure() is not aware it needs to draw sim data
+            # This code forces it to draw the dipole data
             fig_name = _idx2figname(viz_manager.data["fig_idx"]["idx"] - 1)
             ax_plots = [("ax0", "input histogram"), ("ax1", "current dipole")]
             for ax_name, plot_type in ax_plots:
@@ -5008,6 +5020,8 @@ def run_button_clicked(
             simulation_status_bar.value = simulation_status_contents["failed"]
             logger.error(traceback.format_exc())
             return
+        finally:
+            viz_manager.last_action = UiAction.NONE
 
 
 def _update_cell_params_vbox(
@@ -5915,7 +5929,7 @@ def run_opt_button_clicked(
     """
     with log_out:
         simulation_data = data_store.simulated_data
-        loaded_data = data_store.loaded_data
+        experimental_data = data_store.experimental_data
         try:
             # Sim data setup (and related input validation)
             # --------------------------------------------------------------------------
@@ -5981,7 +5995,7 @@ def run_opt_button_clicked(
                     # only support usage of single-trial dipole data.
                     sim_data = simulation_data.get(
                         opt_rmse_target_data_name
-                    ) or loaded_data.get(opt_rmse_target_data_name)
+                    ) or experimental_data.get(opt_rmse_target_data_name)
 
                     if not sim_data:
                         raise RuntimeError(f"The {sim_data} value is invalid.")

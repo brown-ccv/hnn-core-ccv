@@ -27,6 +27,7 @@ from hnn_core.gui._viz_manager import (
     _plot_types,
     _no_overlay_plot_types,
     unlink_relink,
+    _experimental_data_template,
 )
 from hnn_core.gui.gui import (
     _GUI_PrintToLogger,
@@ -445,36 +446,36 @@ def test_gui_upload_data():
     _ = gui.compose()
 
     assert len(gui.viz_manager.data["figs"]) == 0
-    assert len(data_store.loaded_data) == 0
+    assert len(data_store.experimental_data) == 0
 
     file1_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/S1_SupraT.txt"  # noqa
     file2_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/yes_trial_S1_ERP_all_avg.txt"  # noqa
-    gui._simulate_upload_data(file1_url)
+    gui._simulate_upload_experimental_data(file1_url)
 
-    assert len(data_store.loaded_data) == 1
-    assert "S1_SupraT" in data_store.loaded_data.keys()
-    assert data_store.loaded_data["S1_SupraT"]["net"] is None
-    assert type(data_store.loaded_data["S1_SupraT"]["dpls"]) is list
+    assert len(data_store.experimental_data) == 1
+    assert "S1_SupraT" in data_store.experimental_data.keys()
+    assert data_store.experimental_data["S1_SupraT"]["net"] is None
+    assert type(data_store.experimental_data["S1_SupraT"]["dpls"]) is list
     assert len(gui.viz_manager.data["figs"]) == 1
     # support uploading multiple external data.
-    gui._simulate_upload_data(file2_url)
-    assert len(data_store.loaded_data) == 2
+    gui._simulate_upload_experimental_data(file2_url)
+    assert len(data_store.experimental_data) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
     # make sure no repeated uploading for the same name.
-    gui._simulate_upload_data(file1_url)
-    assert len(data_store.loaded_data) == 2
+    gui._simulate_upload_experimental_data(file1_url)
+    assert len(data_store.experimental_data) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
     # No data loading for legacy multi-trial data files.
     file3_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/gamma_tutorial/100_trials.txt"  # noqa
-    gui._simulate_upload_data(file3_url)
+    gui._simulate_upload_experimental_data(file3_url)
     assert any(
         "Data are supposed to have 2 or 4 columns while we have 101." in entry["text"]
         for entry in gui._log_out.outputs
     )
 
-    assert len(data_store.loaded_data) == 2
+    assert len(data_store.experimental_data) == 2
     assert len(gui.viz_manager.data["figs"]) == 2
 
     plt.close("all")
@@ -862,7 +863,7 @@ def test_gui_add_data_dependent_figure(setup_gui):
     n_fig = 1
     for template_name, num_axes in template_names:
         gui.viz_manager.templates_dropdown.value = template_name
-        assert len(gui.viz_manager.datasets_dropdown.options) == 1
+        assert len(gui.viz_manager.viz_tab_simulation_data_dropdown.options) == 1
         gui.viz_manager.make_fig_button.click()
         # Check  figs have data on their axis
         for ax in range(num_axes):
@@ -892,7 +893,7 @@ def test_gui_edit_figure(setup_gui):
 
         axes_config = axes_config_tabs.children[-1].children[1]
         simulation_selection = axes_config.children[0].children[1]
-        assert simulation_selection.options == tuple(sim_names[:n_figs])
+        assert simulation_selection.options == tuple(sim_names[:n_figs]) + ("None",)
     plt.close("all")
 
 
@@ -1086,7 +1087,7 @@ def test_dipole_data_overlay(setup_gui):
 
     # Load data
     file_path = assets_path / "test_default.csv"
-    gui._simulate_upload_data(file_path)
+    gui._simulate_upload_experimental_data(file_path)
 
     # Edit the figure with data overlay
     figid = 1
@@ -1199,9 +1200,9 @@ def test_gui_download_simulation(setup_gui):
     # result is a single csv file
     assert file_extension == ".csv"
 
-    # Check no loaded data is listed in the sims dropdown list to download
+    # Check no experimental/loaded data is listed in the sims dropdown list to download
     file1_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/S1_SupraT.txt"  # noqa
-    gui._simulate_upload_data(file1_url)
+    gui._simulate_upload_experimental_data(file1_url)
     download_simulation_list = gui.simulation_list_widget.options
     assert (
         len(
@@ -1221,7 +1222,7 @@ def test_gui_upload_csv_simulation(setup_gui):
     gui = setup_gui
 
     assert len(gui.viz_manager.data["figs"]) == 0
-    assert len(data_store.loaded_data) == 0
+    assert len(data_store.experimental_data) == 0
 
     # Formulate path to the file
     file_path = assets_path / "test_default.csv"
@@ -1233,25 +1234,28 @@ def test_gui_upload_csv_simulation(setup_gui):
     else:  # UNIX-like systems
         file_url = "file://" + absolute_path
 
-    _ = gui._simulate_upload_data(file_url)
+    _ = gui._simulate_upload_experimental_data(file_url)
 
     # we are loading only 1 trial,
     # assume all the data we need is in the [0] position
-    data_lengh = len(data_store.loaded_data["test_default"]["dpls"][0].times)
+    data_length = len(data_store.experimental_data["test_default"]["dpls"][0].times)
 
-    assert len(data_store.loaded_data) == 1
-    assert "test_default" in data_store.loaded_data.keys()
-    assert data_store.loaded_data["test_default"]["net"] is None
-    assert type(data_store.loaded_data["test_default"]["dpls"]) is list
+    assert len(data_store.experimental_data) == 1
+    assert "test_default" in data_store.experimental_data.keys()
+    assert data_store.experimental_data["test_default"]["net"] is None
+    assert type(data_store.experimental_data["test_default"]["dpls"]) is list
     assert len(gui.viz_manager.data["figs"]) == 1
     assert (
-        len(data_store.loaded_data["test_default"]["dpls"][0].data["agg"]) == data_lengh
+        len(data_store.experimental_data["test_default"]["dpls"][0].data["agg"])
+        == data_length
     )
     assert (
-        len(data_store.loaded_data["test_default"]["dpls"][0].data["L2"]) == data_lengh
+        len(data_store.experimental_data["test_default"]["dpls"][0].data["L2"])
+        == data_length
     )
     assert (
-        len(data_store.loaded_data["test_default"]["dpls"][0].data["L5"]) == data_lengh
+        len(data_store.experimental_data["test_default"]["dpls"][0].data["L5"])
+        == data_length
     )
 
 
@@ -1409,7 +1413,7 @@ def test_fig_tabs_dropdown_lists(setup_gui):
             # Check that dropdown has been updated with all simulation names
             assert all(sim in sim_names for sim in [sim_name, sim_name2])
 
-            assert ax_control.children[4].description == "Data to Compare:"
+            assert ax_control.children[4].description == "Experimental Data:"
 
             # Check the data to compare dropdown is enable for
             # non "input histograms" plot type
@@ -1925,7 +1929,7 @@ def test_gui_run_optimization(backend_selection, opt_solver, dt, setup_gui):
     if not file_path.exists():
         data_url = f"https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/MEG_detection_data/{file_path}"  # noqa
         urlretrieve(data_url, file_path)
-    gui._simulate_upload_data(file_path)
+    gui._simulate_upload_experimental_data(file_path)
 
     # Our first optimization run will use the  objective function of `dipole_corr`
     # ----------------------------------------------------------------------------------
@@ -2268,13 +2272,13 @@ def test_data_store_direct_reset():
 
     store = DataStore()
     store.simulated_data["a"]["dpls"].append("fake_dpl")
-    store.loaded_data["b"]["net"] = "fake_net"
+    store.experimental_data["b"]["net"] = "fake_net"
     store.networks["c"] = "fake_config"
 
     store.reset()
 
     assert len(store.simulated_data) == 0
-    assert len(store.loaded_data) == 0
+    assert len(store.experimental_data) == 0
     assert len(store.networks) == 0
     assert list(store.all_data_names) == []
 
@@ -2293,7 +2297,7 @@ def test_data_store_reset_on_gui_reinit(setup_gui):
     HNNGUI(network_configuration=assets_path / "neymotin2020_3x3_drives.json")
 
     assert len(data_store.simulated_data) == 0
-    assert len(data_store.loaded_data) == 0
+    assert len(data_store.experimental_data) == 0
     assert len(data_store.networks) == 0
 
 
@@ -2308,4 +2312,176 @@ def test_data_store_shared_singleton_across_modules(setup_gui):
     # data written through gui.py is immediately
     # visible to _VizManager's data_store widget updates
     gui.viz_manager.templates_dropdown.value = "Drive-Dipole (2x1)"
-    assert sim_name in gui.viz_manager.datasets_dropdown.value
+    assert sim_name in gui.viz_manager.viz_tab_simulation_data_dropdown.value
+
+
+def test_viz_tab_dropdown(setup_gui):
+    """Test switch template values in visualization tabs shows/hides the
+    simulation and experimental data dropdowns"""
+    gui = setup_gui
+    sim_name_1 = "default"
+    gui.widget_simulation_name.value = sim_name_1
+    gui.run_button.click()
+
+    file_path = assets_path / "test_default.csv"
+    gui._simulate_upload_experimental_data(file_path)
+
+    # simulate change value of templates_dropdown
+    # Test the viz_tab_simulation_data_dropdown is showing by being a child of the container viz_tab_data_selection
+    gui.viz_manager.templates_dropdown.value = "Drive-Dipole (2x1)"
+    assert sim_name_1 in gui.viz_manager.viz_tab_simulation_data_dropdown.options
+    assert len(gui.viz_manager.viz_tab_simulation_data_dropdown.options) == 1
+    assert (
+        gui.viz_manager.viz_tab_data_selection.children[0].description
+        == "Simulation Data:"
+    )
+
+    # simulate change value of templates_dropdown
+    # Test the viz_tab_simulation_data_dropdown is showing by being a child of the container viz_tab_data_selection
+    gui.viz_manager.templates_dropdown.value = _experimental_data_template
+
+    assert "test_default" in gui.viz_manager.viz_tab_experimental_data_dropdown.options
+    assert len(gui.viz_manager.viz_tab_experimental_data_dropdown.options) == 1
+    assert (
+        gui.viz_manager.viz_tab_data_selection.children[0].description
+        == "Experimental data:"
+    )
+
+    # simulate change value of templates_dropdown
+    gui.viz_manager.templates_dropdown.value = "[Blank] 2row x 1col (1:3)"
+    assert (
+        gui.viz_manager.viz_tab_data_selection.children[0].layout.visibility == "hidden"
+    )
+
+
+### Test generated by  Claude AI
+def test_viz_tab_ax_control_dropdowns(setup_gui):
+    """Test dropdowns in ax controls :
+    Simulation Data Dropdown only shows simulated data
+    Experimental Data only shows experimental data"""
+
+    gui = setup_gui
+
+    sim_name = "sim1"
+    gui.widget_simulation_name.value = sim_name
+    gui.run_button.click()
+
+    experimental_name = "test_default"
+    file_path = assets_path / "test_default.csv"
+    gui._simulate_upload_experimental_data(file_path)
+
+    viz_tabs = gui.viz_manager.axes_config_tabs.children
+    for tab in viz_tabs:
+        controls = tab.children[1]
+        for ax_control in controls.children:
+            simulation_dropdown = ax_control.children[1]
+            experimental_dropdown = ax_control.children[4]
+
+            assert simulation_dropdown.description == "Simulation Data:"
+            assert sim_name in simulation_dropdown.options
+            assert experimental_name not in simulation_dropdown.options
+
+            assert experimental_dropdown.description == "Experimental Data:"
+            assert experimental_name in experimental_dropdown.options
+            assert sim_name not in experimental_dropdown.options
+
+    plt.close("all")
+
+
+### Test generated by  Claude AI
+def test_fig_contain_data(setup_gui):
+    """Check figures are not empty white canvas after run simulation or upload data"""
+    gui = setup_gui
+
+    # after running a simulation, the default fig's axes should have data
+    gui.run_button.click()
+    default_fig = gui.viz_manager.figs[1]
+    for ax in default_fig.axes:
+        assert ax.has_data()
+
+    # after uploading data, the auto-generated fig should also have data
+    file_path = assets_path / "test_default.csv"
+    gui._simulate_upload_experimental_data(file_path)
+    experimental_fig_idx = gui.viz_manager.fig_idx["idx"] - 1
+    experimental_fig = gui.viz_manager.figs[experimental_fig_idx]
+    assert experimental_fig.axes[0].has_data()
+
+    plt.close("all")
+
+
+### Test generated by  Claude AI
+def test_axe_control_dropdowns(setup_gui):
+    """Test that the simulation_selection and target_data_selection dropdowns
+    always load the last run and uploaded data respectively"""
+
+    gui = setup_gui
+
+    # Each run should select itself in the new figure's Simulation Data
+    # dropdown, leaving Experimental Data at "None".
+    for sim_name in ("sim1", "sim2"):
+        gui.widget_simulation_name.value = sim_name
+        gui.run_button.click()
+
+        ax_control = (
+            gui.viz_manager.axes_config_tabs.children[-1].children[1].children[0]
+        )
+        simulation_selection = ax_control.children[1]
+        target_data_selection = ax_control.children[4]
+
+        assert simulation_selection.value == sim_name
+        assert target_data_selection.value == "None"
+
+    # Uploading data should select it in the new figure's Experimental Data
+    # dropdown, leaving Simulation Data at "None".
+    file_path = assets_path / "test_default.csv"
+    gui._simulate_upload_experimental_data(file_path)
+
+    ax_control = gui.viz_manager.axes_config_tabs.children[-1].children[1].children[0]
+    simulation_selection = ax_control.children[1]
+    target_data_selection = ax_control.children[4]
+
+    assert simulation_selection.value == "None"
+    assert target_data_selection.value == "test_default"
+
+    plt.close("all")
+
+
+def test_target_comparison_change_disables_plot_type(setup_gui):
+    """Test that picking an experimental dataset to compare against disables
+    the plot type dropdown, and picking "None" re-enables it."""
+
+    gui = setup_gui
+
+    sim_name = "sim1"
+    gui.widget_simulation_name.value = sim_name
+    gui.run_button.click()
+
+    file_path = assets_path / "test_default.csv"
+    gui._simulate_upload_experimental_data(file_path)
+
+    gui._simulate_viz_action("switch_fig_template", "[Blank] single figure")
+    gui._simulate_viz_action("add_fig")
+
+    figid = gui.viz_manager.fig_idx["idx"] - 1
+    figname = f"Figure {figid}"
+    axname = "ax0"
+
+    tab = gui.viz_manager.axes_config_tabs
+    fig_tab_idx = tab.titles.index(figname)
+    ax_control_tabs = tab.children[fig_tab_idx].children[1]
+    ax_idx = ax_control_tabs.titles.index(axname)
+    ax_control = ax_control_tabs.children[ax_idx]
+
+    plot_type_selection = ax_control.children[0]
+    target_data_selection = ax_control.children[4]
+
+    assert target_data_selection.value == "None"
+    assert plot_type_selection.disabled is False
+
+    target_data_selection.value = "test_default"
+    assert plot_type_selection.disabled is True
+
+    target_data_selection.value = "None"
+    assert plot_type_selection.disabled is False
+
+    plt.close("all")
