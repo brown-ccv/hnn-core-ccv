@@ -65,11 +65,10 @@ _no_overlay_plot_types = [
     "input histogram",
 ]
 
-_ext_data_disabled_plot_types = [
-    "spikes",
-    "spikes with dipoles",
-    "input histogram",
-    "network",
+# Currently, if experimental data is selected, we only allow the "current dipole" plot
+# type to be selected.
+_exp_data_plot_types_allowlist = [
+    "current dipole",
 ]
 
 _spectrogram_color_maps = [
@@ -166,7 +165,7 @@ class UiAction(str, Enum):
 def set_plot_types_options(data_name, plot_type_selection_dropdown):
     if data_name in data_store.experimental_data_names:
         plot_type_selection_dropdown.options = [
-            pt for pt in _plot_types if pt not in _ext_data_disabled_plot_types
+            pt for pt in _plot_types if pt in _exp_data_plot_types_allowlist
         ]
     else:
         plot_type_selection_dropdown.options = _plot_types
@@ -183,10 +182,10 @@ def experimental_data_change(new_experimental_data_name, plot_type_selection):
 
 
 def plot_type_coupled_change(new_plot_type, experimental_data_selection):
-    if new_plot_type != "current dipole":
-        experimental_data_selection.disabled = True
-    else:
+    if new_plot_type in _exp_data_plot_types_allowlist:
         experimental_data_selection.disabled = False
+    else:
+        experimental_data_selection.disabled = True
 
 
 def unlink_relink(attribute):
@@ -260,7 +259,7 @@ def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
             dpl.scale(plot_config["dipole_scaling"])
 
     if net_copied is None:
-        assert plot_type not in _ext_data_disabled_plot_types
+        assert plot_type in _exp_data_plot_types_allowlist
 
     # Explicitly do this in case the
     # x and y axis are hidden after plotting some functions.
