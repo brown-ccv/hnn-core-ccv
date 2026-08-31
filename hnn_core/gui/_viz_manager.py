@@ -231,8 +231,8 @@ def _figname2idx(fname):
     return int(fname.split(" ")[-1])
 
 
-def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
-    """Refresh plots with simulation_data.
+def _update_ax(fig, ax, data, data_name, plot_type, plot_config):
+    """Refresh plots with data.
 
     Parameters
     ----------
@@ -240,16 +240,18 @@ def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
         A matplotlib.figure.Figure object.
     ax : Axes
         matplotlib.axes.Axes
-    single_simulation : dict
-        A single simulation
+    data : dict
+        A single dataset from either simulated or loaded experimental data.
+    data_name : str
+        The given name of the dataset in 'data'.
     plot_type : str
         Type of subplots
     plot_config : dict
         A dict that specifies the preprocessing and style of plots.
     """
     # Make sure that visualization does not change the original data
-    dpls_copied = copy.deepcopy(single_simulation["dpls"])
-    net_copied = copy.deepcopy(single_simulation["net"])
+    dpls_copied = copy.deepcopy(data["dpls"])
+    net_copied = copy.deepcopy(data["net"])
     for dpl in dpls_copied:
         if plot_config["dipole_smooth"] > 0:
             dpl.smooth(plot_config["dipole_smooth"]).scale(
@@ -341,7 +343,7 @@ def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
             min_f = plot_config["min_spectral_frequency"]
             max_f = plot_config["max_spectral_frequency"]
             color = ax._get_lines.get_next_color()
-            label = sim_name + " (Aggregate)"
+            label = data_name + " (Aggregate)"
             dpls_copied[0].plot_psd(
                 fmin=min_f, fmax=max_f, color=color, label=label, ax=ax, show=False
             )
@@ -351,7 +353,7 @@ def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
             min_f = plot_config["min_spectral_frequency"]
             max_f = plot_config["max_spectral_frequency"]
             color = ax._get_lines.get_next_color()
-            label = sim_name + " (Layer 2/3)"
+            label = data_name + " (Layer 2/3)"
             dpls_copied[0].plot_psd(
                 fmin=min_f,
                 fmax=max_f,
@@ -367,7 +369,7 @@ def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
             min_f = plot_config["min_spectral_frequency"]
             max_f = plot_config["max_spectral_frequency"]
             color = ax._get_lines.get_next_color()
-            label = sim_name + " (Layer 5)"
+            label = data_name + " (Layer 5)"
             dpls_copied[0].plot_psd(
                 fmin=min_f,
                 fmax=max_f,
@@ -415,9 +417,9 @@ def _update_ax(fig, ax, single_simulation, sim_name, plot_type, plot_config):
     elif "dipole" in plot_type:
         if len(dpls_copied) > 0:
             if len(dpls_copied) > 1:
-                label = f"{sim_name}: average"
+                label = f"{data_name}: average"
             else:
-                label = sim_name
+                label = data_name
 
             color = ax._get_lines.get_next_color()
             if plot_type == "current dipole":
@@ -547,7 +549,7 @@ def _plot_on_axes(
     plot_type_widget : ipywidgets.Dropdown
         A dropdown widget that contains all the plot types.
     experimental_data_widget : ipywidgets.Dropdown
-        The target data we want to compare with. Note that this could be 'None'
+        The experimental data we want to compare with. Note that this could be 'None'
     spectrogram_colormap_selection : ipywidgets.Dropdown
         A dropdown widget that contains all the colormaps for spectrogram.
     hide_spike_legend : ipywidgets.Dropdown
@@ -577,19 +579,17 @@ def _plot_on_axes(
     existing_plots : ipywidgets.VBox
         A VBox widget that contains all the existing plots.
     """
-    data_to_plot = (
+    name_of_data_to_plot = (
         experimental_data_widget.value
         if plot_context.get("is_experimental_data")
         else simulations_data_widget.value
     )
 
-    ## It must look up both run_data and laoded_data dicts for sim_name
-    ## Maybe throw exception if there's no simulation?
-    single_simulation = data_store.simulated_data.get(
-        data_to_plot
-    ) or data_store.experimental_data.get(data_to_plot)
-    assert single_simulation, (
-        f"{data_to_plot} not found in simulation or experimental data"
+    data_to_plot = data_store.simulated_data.get(
+        name_of_data_to_plot
+    ) or data_store.experimental_data.get(name_of_data_to_plot)
+    assert data_to_plot, (
+        f"{name_of_data_to_plot} not found in simulation or experimental data"
     )
 
     plot_type = plot_type_widget.value
@@ -600,7 +600,7 @@ def _plot_on_axes(
     # freeze plot type
     plot_type_widget.disabled = True
 
-    simulation_plot_config = {
+    plot_config = {
         "dipole_scaling": dipole_scaling.value,
         "dipole_smooth": dipole_smooth.value,
         "min_spectral_frequency": min_spectral_frequency.value,
@@ -611,7 +611,12 @@ def _plot_on_axes(
     }
 
     dpls_processed = _update_ax(
-        fig, ax, single_simulation, data_to_plot, plot_type, simulation_plot_config
+        fig,
+        ax,
+        data_to_plot,
+        name_of_data_to_plot,
+        plot_type,
+        plot_config,
     )
 
     # If experimental_data_widget is not None and we are plotting a simulated dipole,
@@ -621,12 +626,12 @@ def _plot_on_axes(
         and experimental_data_widget.value in data_store.experimental_data_names
         and plot_type == "current dipole"
     ):
-        target_sim_name = experimental_data_widget.value
-        target_sim = data_store.simulated_data.get(
-            target_sim_name
-        ) or data_store.experimental_data.get(target_sim_name)
+        name_of_secondary_exp_data_to_plot = experimental_data_widget.value
+        secondary_exp_data_to_plot = data_store.simulated_data.get(
+            name_of_secondary_exp_data_to_plot
+        ) or data_store.experimental_data.get(name_of_secondary_exp_data_to_plot)
 
-        data_plot_config = {
+        secondary_plot_config = {
             "dipole_scaling": data_scaling.value,
             "dipole_smooth": data_smooth.value,
             "min_spectral_frequency": min_spectral_frequency.value,
@@ -636,9 +641,14 @@ def _plot_on_axes(
             "marker_size": marker_size.value,
         }
 
-        # plot the experimental dipole.
-        target_dpl_processed = _update_ax(
-            fig, ax, target_sim, target_sim_name, plot_type, data_plot_config
+        # plot the "secondary" experimental dipole onto the existing fig/axes object.
+        secondary_dpl_processed = _update_ax(
+            fig,
+            ax,
+            secondary_exp_data_to_plot,
+            name_of_secondary_exp_data_to_plot,
+            plot_type,
+            secondary_plot_config,
         )[0]  # we assume there is only one dipole.
 
         # calculate the RMSE between the two dipoles.
@@ -648,11 +658,11 @@ def _plot_on_axes(
             dpl = _avg_dipole_check(dpls_processed)
         else:
             dpl = dpls_processed
-        rmse = _rmse(dpl, target_dpl_processed, t0, tstop)
-        corr = 1 - _anticorr(dpl, target_dpl_processed, t0, tstop)
+        rmse = _rmse(dpl, secondary_dpl_processed, t0, tstop)
+        corr = 1 - _anticorr(dpl, secondary_dpl_processed, t0, tstop)
         annotation_text = (
-            f"RMSE({data_to_plot}, {target_sim_name}): {rmse:.4f}\n"
-            f"Corr({data_to_plot}, {target_sim_name}): {corr:.4f}"
+            f"RMSE({name_of_data_to_plot}, {name_of_secondary_exp_data_to_plot}): {rmse:.4f}\n"
+            f"Corr({name_of_data_to_plot}, {name_of_secondary_exp_data_to_plot}): {corr:.4f}"
         )
 
         # find subplot's annotation
@@ -677,9 +687,9 @@ def _plot_on_axes(
 
         metrics_logger_text = (
             f"RMSE {rmse:.4f} Corr {corr:.4f} ("
-            f"{data_to_plot} smooth:{dipole_smooth.value} "
+            f"{name_of_data_to_plot} smooth:{dipole_smooth.value} "
             f"scale:{dipole_scaling.value} \n"
-            f"{target_sim_name} smooth:{data_smooth.value} "
+            f"{name_of_secondary_exp_data_to_plot} smooth:{data_smooth.value} "
             f"scale:{data_scaling.value})"
         )
 
@@ -688,8 +698,8 @@ def _plot_on_axes(
     existing_plots.children = (
         *existing_plots.children,
         Label(
-            f"{data_to_plot}: {plot_type}",
-            description=f"{data_to_plot}: {plot_type}",
+            f"{name_of_data_to_plot}: {plot_type}",
+            description=f"{name_of_data_to_plot}: {plot_type}",
         ).add_class("hide-label"),
     )
     if data["use_ipympl"] is False:
@@ -741,7 +751,7 @@ def _build_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_ac
     layout = Layout(width="98%")
 
     simulation_names = tuple(data_store.simulated_data) + ("None",)
-    target_names = tuple(data_store.experimental_data) + ("None",)
+    experimental_names = tuple(data_store.experimental_data) + ("None",)
 
     default_smoothing = fig_default_params["default_smoothing"]
     default_scaling = fig_default_params["default_scaling"]
@@ -758,7 +768,7 @@ def _build_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_ac
     )
 
     init_sim_data_name, init_experimental_data_name = _get_dropdowns_initial_values(
-        widgets, ui_action, simulation_names, target_names, plot_type_selection
+        widgets, ui_action, simulation_names, experimental_names, plot_type_selection
     )
 
     simulation_selection = Dropdown(
@@ -771,7 +781,7 @@ def _build_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_ac
     )
 
     experimental_data_selection = Dropdown(
-        options=target_names,
+        options=experimental_names,
         value=init_experimental_data_name,
         description="Experimental Data:",
         disabled=False,
@@ -945,7 +955,7 @@ def _build_ax_control(widgets, data, fig_default_params, fig_idx, fig, ax, ui_ac
 
 
 def _get_dropdowns_initial_values(
-    widgets, ui_action, simulation_names, target_names, plot_type_selection
+    widgets, ui_action, simulation_names, experimental_names, plot_type_selection
 ):
     init_sim_data_name = None
     init_experimental_data_name = None
@@ -963,9 +973,9 @@ def _get_dropdowns_initial_values(
         init_sim_data_name = "None"
         init_experimental_data_name = next(
             (
-                target_name
-                for target_name in reversed(target_names)
-                if target_name != "None"
+                experimental_name
+                for experimental_name in reversed(experimental_names)
+                if experimental_name != "None"
             ),
             None,
         )
