@@ -1242,7 +1242,7 @@ class HNNGUI:
                     </div>
                 </div>
             """,
-            description="AES TODO",
+            description="HNN GUI Header",
         )
         self._header.add_class("hide-label")
 
