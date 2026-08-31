@@ -177,7 +177,7 @@ def _check_template_type_is_sim_data_dependent(template_name):
 
 
 def experimental_data_change(new_experimental_data_name, plot_type_selection):
-    """Only enable plot_type_selection when experimenta_data dropdown is 'None'"""
+    """Only enable plot_type_selection when experimental_data dropdown is 'None'"""
     plot_type_selection.disabled = new_experimental_data_name != "None"
 
 
@@ -542,11 +542,11 @@ def _plot_on_axes(
     ----------
     button : ipywidgets.Button
         Button that plots new data on top of existing figure.
-    widgets_simulation : ipywidgets.Dropdown
+    simulations_data_widget : ipywidgets.Dropdown
         A dropdown widget that contains all the simulation names.
-    widgets_plot_type : ipywidgets.Dropdown
+    plot_type_widget : ipywidgets.Dropdown
         A dropdown widget that contains all the plot types.
-    target_simulations : ipywidgets.Dropdown
+    experimental_data_widget : ipywidgets.Dropdown
         The target data we want to compare with. Note that this could be 'None'
     spectrogram_colormap_selection : ipywidgets.Dropdown
         A dropdown widget that contains all the colormaps for spectrogram.
@@ -567,7 +567,7 @@ def _plot_on_axes(
         A dict that contains all the widgets.
     data : dict
         A dict that contains all the simulation data. Can be accessed by names
-        specified in widgets_simulation and target_simulations widgets.
+        specified in simulations_data_widget and experimental_data_widget widgets.
     fig_idx : int
         The index of the figure we want to plot on.
     fig : matplotlib.figure.Figure
@@ -614,8 +614,8 @@ def _plot_on_axes(
         fig, ax, single_simulation, data_to_plot, plot_type, simulation_plot_config
     )
 
-    # If target_simulations is not None and we are plotting a dipole,
-    # we need to plot the target dipole as well.
+    # If experimental_data_widget is not None and we are plotting a simulated dipole,
+    # we need to plot the experimental dipole as well.
     if (
         not plot_context.get("is_experimental_data")
         and experimental_data_widget.value in data_store.experimental_data_names
@@ -636,7 +636,7 @@ def _plot_on_axes(
             "marker_size": marker_size.value,
         }
 
-        # plot the target dipole.
+        # plot the experimental dipole.
         target_dpl_processed = _update_ax(
             fig, ax, target_sim, target_sim_name, plot_type, data_plot_config
         )[0]  # we assume there is only one dipole.
