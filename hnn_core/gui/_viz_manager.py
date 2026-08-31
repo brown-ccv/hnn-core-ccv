@@ -171,7 +171,7 @@ def set_plot_types_options(data_name, plot_type_selection_dropdown):
         plot_type_selection_dropdown.options = _plot_types
 
 
-def _check_template_type_is_sim_data_dependant(template_name):
+def _check_template_type_is_sim_data_dependent(template_name):
     sim_data_options = list(sim_data_templates.keys())
     return template_name in sim_data_options
 
@@ -973,7 +973,7 @@ def _get_dropdowns_initial_values(
     elif ui_action == UiAction.MAKE_FIGURE_BUTTON:
         # Retrieve Template name and simulation or experimental data name
         template_type = widgets["templates_dropdown"].value
-        if _check_template_type_is_sim_data_dependant(template_type):
+        if _check_template_type_is_sim_data_dependent(template_type):
             init_sim_data_name = widgets["dataset_dropdown"].value
             init_experimental_data_name = "None"
         elif template_type == _experimental_data_template:
@@ -1361,7 +1361,7 @@ class _VizManager:
         # viz_tab_simulation_data_dropdown or viz_tab_experimental_data_dropdown
         # we dont do any additional filter here.
         template_name = template_type.new
-        if _check_template_type_is_sim_data_dependant(template_name):
+        if _check_template_type_is_sim_data_dependent(template_name):
             # Add only simulated data
             # list automatically loops through the keys and appends them
             # or falls back to a list containing a single space string
@@ -1398,7 +1398,7 @@ class _VizManager:
 
         sim_name = None
         template_name = self.widgets["templates_dropdown"].value
-        is_sim_data_template = _check_template_type_is_sim_data_dependant(template_name)
+        is_sim_data_template = _check_template_type_is_sim_data_dependent(template_name)
         is_experimental_data = template_name == _experimental_data_template
         if is_sim_data_template or is_experimental_data:
             dropdown_key = (
