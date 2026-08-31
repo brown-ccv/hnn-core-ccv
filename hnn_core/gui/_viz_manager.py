@@ -981,7 +981,7 @@ def _get_dropdowns_initial_values(
             init_sim_data_name = "None"
             init_experimental_data_name = widgets["experimental_data_dropdown"].value
         else:
-            ## Asume it's blank figure
+            # Assume it's blank figure
             init_sim_data_name = "None"
             init_experimental_data_name = "None"
 
