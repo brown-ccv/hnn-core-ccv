@@ -152,7 +152,7 @@ sim_data_templates = {
     },
 }
 
-_experimental_data_template = ["Experimental Data - Dipole"]
+_experimental_data_templates = ["Experimental Data - Dipole"]
 
 
 class UiAction(str, Enum):
@@ -976,7 +976,7 @@ def _get_dropdowns_initial_values(
         if _check_template_type_is_sim_data_dependent(template_type):
             init_sim_data_name = widgets["dataset_dropdown"].value
             init_experimental_data_name = "None"
-        elif template_type == _experimental_data_template:
+        elif template_type in _experimental_data_templates:
             init_sim_data_name = "None"
             init_experimental_data_name = widgets["experimental_data_dropdown"].value
         else:
@@ -1201,7 +1201,7 @@ class _VizManager:
         template_names.extend(list(blank_templates.keys()))
         self.templates_dropdown = Dropdown(
             description="Figure Template:",
-            options=template_names + [_experimental_data_template],
+            options=template_names + _experimental_data_templates,
             value=template_names[0],
             style={"description_width": "28%"},
             layout=Layout(width="70%"),
@@ -1375,7 +1375,7 @@ class _VizManager:
             ]
             self.viz_tab_data_selection.children[0].layout.visibility = "visible"
 
-        elif template_name == _experimental_data_template:
+        elif template_name in _experimental_data_templates:
             # Repopulate viz_tab_experimental_data_dropdown and hide simulation data dropdown
             experimental_data_names = list(data_store.experimental_data) or [" "]
             self.viz_tab_experimental_data_dropdown.options = experimental_data_names
@@ -1399,7 +1399,7 @@ class _VizManager:
         sim_name = None
         template_name = self.widgets["templates_dropdown"].value
         is_sim_data_template = _check_template_type_is_sim_data_dependent(template_name)
-        is_experimental_data = template_name == _experimental_data_template
+        is_experimental_data = template_name in _experimental_data_templates
         if is_sim_data_template or is_experimental_data:
             dropdown_key = (
                 "dataset_dropdown"
@@ -1482,7 +1482,7 @@ class _VizManager:
 
     ## This function resets the state of the templates names list dropdown
     def _simulate_switch_fig_template(self, template_name: str):
-        is_experimental_data_entry = template_name == _experimental_data_template
+        is_experimental_data_entry = template_name in _experimental_data_templates
         assert (
             template_name in blank_templates
             or template_name in sim_data_templates
