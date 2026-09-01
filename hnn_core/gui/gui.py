@@ -711,6 +711,18 @@ class HNNGUI:
                     Operation Warning
                 </div>
             """,
+            "loaded": """
+                <div
+                class='sim-status-box'
+                style='
+                    background:var(--gentle-green);
+                    padding-left:10px;
+                    color:black;
+                    font-weight:bold;
+                '>
+                    Experimental Data Loaded
+                </div>
+            """,
         }
 
         # ----------------------------------------------------------------------
@@ -1539,6 +1551,21 @@ class HNNGUI:
         data_filename = dict_name[0]
         file_extension = f".{dict_name[1]}"
 
+        if data_store.simulated_data.get(data_filename) is not None:
+            logger.error(
+                textwrap.dedent(f"""
+                Cannot load external data named '{data_filename}': a simulation
+                with the same name already exists. Please rename the data file
+                to avoid naming conflicts.
+                """)
+                .replace("\n", " ")
+                .strip()
+            )
+            self._simulation_status_bar.value = self._simulation_status_contents[
+                "failed"
+            ]
+            return
+
         # Decision: In the case where a user wants to upload an experimental data file that is of the same name of
         # an existing experimental data file, then:
         # The new data should overwrite the prior data of the same name
@@ -1590,6 +1617,9 @@ class HNNGUI:
                 operation="plot",
             )
             self.viz_manager.last_action = UiAction.NONE
+            self._simulation_status_bar.value = self._simulation_status_contents[
+                "loaded"
+            ]
 
     def _update_target_dipole_data_widget(self):
         """refresh gui.opt_target_widgets["target_dipole_data"] dropdown using data_store"""
@@ -4934,11 +4964,26 @@ def run_button_clicked(
     global_gain_textfields,
 ):
     """Run the simulation and plot outputs."""
+
+    _sim_name = widget_simulation_name.value
     simulation_data = data_store.simulated_data
+
+    if data_store.experimental_data.get(_sim_name) is not None:
+        logger.error(
+            textwrap.dedent(f"""
+            Cannot run simulation named '{_sim_name}': a experimental data
+            with the same name already exists. Please rename the simulation to
+            avoid naming conflicts.
+            """)
+            .replace("\n", " ")
+            .strip()
+        )
+
+        simulation_status_bar.value = simulation_status_contents["failed"]
+        return
+
     with log_out:
         try:
-            _sim_name = widget_simulation_name.value
-
             if (
                 _sim_name in simulation_data
                 and simulation_data[_sim_name]["net"] is not None
