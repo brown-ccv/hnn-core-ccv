@@ -5944,15 +5944,6 @@ def run_opt_button_clicked(
         try:
             # Sim data setup (and related input validation)
             # --------------------------------------------------------------------------
-            #
-            # AES: a "trash" simulation appears to be created (named "default") even if
-            # all a user does is load an external dipole data file. However, I do not
-            # fully understand how VizManager et al. manages the simulation data (I find
-            # it very confusing) so I am NOT touching it.
-            # for _name in tuple(simulation_data.keys()):
-            #     if len(simulation_data[_name]["dpls"]) == 0:
-            #         del simulation_data[_name]
-
             _sim_name = widget_simulation_name.value
 
             # RMSE Target data extraction (and related input validation)
