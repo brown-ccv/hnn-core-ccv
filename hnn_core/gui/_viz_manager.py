@@ -1410,20 +1410,15 @@ class _VizManager:
         template_name = self.widgets["templates_dropdown"].value
         is_sim_data_template = _check_template_type_is_sim_data_dependent(template_name)
         is_experimental_data = template_name in _experimental_data_templates
-        if is_sim_data_template or is_experimental_data:
-            dropdown_key = (
-                "dataset_dropdown"
-                if is_sim_data_template
-                else "experimental_data_dropdown"
-            )
-            available_data = (
-                data_store.simulated_data
-                if is_sim_data_template
-                else data_store.experimental_data
-            )
-            data_name = self.widgets[dropdown_key].value
-            if data_name not in available_data:
+        if is_sim_data_template:
+            data_name = self.widgets["dataset_dropdown"].value
+            if data_name not in data_store.simulated_data:
                 logger.error("No simulation data has been simulated")
+                return
+        elif is_experimental_data:
+            data_name = self.widgets["experimental_data_dropdown"].value
+            if data_name not in data_store.experimental_data:
+                logger.error("No experimental data has been loaded")
                 return
 
         ax_plots = None
@@ -1461,7 +1456,7 @@ class _VizManager:
         # This case only applies when the "Make figure" button in the viz tab  is clicked
         if data_name is not None and ax_plots is not None:
             fig_name = _idx2figname(self.data["fig_idx"]["idx"] - 1)
-            self._draw_simulation_data(
+            self._draw_data(
                 fig_name, data_name, template_name, ax_plots, preprocessing_config
             )
             logger.info(
@@ -1471,7 +1466,7 @@ class _VizManager:
     def _simulate_add_fig(self):
         self.make_fig_button.click()
 
-    def _draw_simulation_data(
+    def _draw_data(
         self, fig_name, data_name, template_name, ax_plots, preprocessing_config=None
     ):
         preprocessing_config = preprocessing_config or {}
