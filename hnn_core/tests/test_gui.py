@@ -465,7 +465,12 @@ def test_gui_upload_data():
     # make sure no repeated uploading for the same name.
     gui._simulate_upload_experimental_data(file1_url)
     assert len(data_store.experimental_data) == 2
-    assert len(gui.viz_manager.data["figs"]) == 2
+    assert "Operation Warning" in gui._simulation_status_bar.value
+    assert any(
+        "has been overwritten" in entry["text"] for entry in gui._log_out.outputs
+    )
+    ## First data gets overwritten, but num figs = 3
+    assert len(gui.viz_manager.data["figs"]) == 3
 
     # No data loading for legacy multi-trial data files.
     file3_url = "https://raw.githubusercontent.com/jonescompneurolab/hnn/master/data/gamma_tutorial/100_trials.txt"  # noqa
@@ -476,7 +481,7 @@ def test_gui_upload_data():
     )
 
     assert len(data_store.experimental_data) == 2
-    assert len(gui.viz_manager.data["figs"]) == 2
+    assert len(gui.viz_manager.data["figs"]) == 3
 
     plt.close("all")
 

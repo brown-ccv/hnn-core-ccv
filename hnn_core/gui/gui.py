@@ -53,7 +53,6 @@ from hnn_core.dipole import _read_dipole_txt, average_dipoles
 from hnn_core.gui._logging import logger
 from hnn_core.gui._data_store import data_store
 
-# from hnn_core.gui._gui_utils import clear_empty_trash_simulations
 from hnn_core.gui._viz_manager import _idx2figname, _VizManager, UiAction
 from hnn_core.hnn_io import dict_to_network, write_network_configuration
 from hnn_core.network import pick_connection, _check_global_synaptic_gains_uniformity
@@ -698,6 +697,18 @@ class HNNGUI:
                     color:black;
                 '>
                     Simulation failed
+                </div>
+            """,
+            "warning": """
+                <div
+                class='sim-status-box'
+                style='
+                    background:var(--statusbar-running);
+                    padding-left:10px;
+                    color:black;
+                    font-weight:bold;
+                '>
+                    Operation Warning
                 </div>
             """,
         }
@@ -1357,7 +1368,6 @@ class HNNGUI:
                 self.simulation_list_widget,
                 self.cell_parameters_widgets,
                 self.global_gain_widgets,
-                self.opt_target_widgets["target_dipole_data"],
             )
 
         def _run_opt_button_clicked_cb(b):
@@ -1529,17 +1539,26 @@ class HNNGUI:
         data_filename = dict_name[0]
         file_extension = f".{dict_name[1]}"
 
-        # If data was already loaded return
+        # Decision: In the case where a user wants to upload an experimental data file that is of the same name of
+        # an existing experimental data file, then:
+        # The new data should overwrite the prior data of the same name
+        # The GUI status bar at the bottom should switch to state that looks yellow (indicating "warning")
+        # The log should have a warning that the user has OVERWRITTEN the data of that name, and so will need to redo any existing visualizations or optimizations using the new version of the data, since the prior results may no longer be accurate.
         if data_store.experimental_data.get(data_filename) is not None:
-            with self._log_out:
-                logger.error(f"Found existing data: {data_filename}.")
-            return
+            logger.warning(f""" External data {data_filename} has been overwritten. \
+                           User will need to redo any existing visualizations or \
+                           optimizations using the new version of the data, \
+                           since the prior results may no longer be accurate.""")
+            self._simulation_status_bar.value = self._simulation_status_contents[
+                "warning"
+            ]
 
         # Read the file
         ext_content = data_dict["content"]
         ext_content = codecs.decode(ext_content, encoding="utf-8")
         with self._log_out:
             # Write loaded data to data object
+            # If the key already exists, defaultdic will overwrite it
             data_store.experimental_data[data_filename] = {
                 "net": None,
                 "dpls": [_read_dipole_txt(io.StringIO(ext_content), file_extension)],
@@ -4913,21 +4932,13 @@ def run_button_clicked(
     simulations_list_widget,
     cell_parameters_widgets,
     global_gain_textfields,
-    target_dipole_data_widget,
 ):
     """Run the simulation and plot outputs."""
     simulation_data = data_store.simulated_data
     with log_out:
         try:
-            # clear empty trash simulations
-            # Camilo: It seems the function below is not necessary
-            # it's implementation was before my time, so
-            # I am not sure what it supposes to fix.
-            # Test as passing without it. I am going go comment the
-            # code for now in case is needed again.
-            # clear_empty_trash_simulations(simulation_data)
-
             _sim_name = widget_simulation_name.value
+
             if (
                 _sim_name in simulation_data
                 and simulation_data[_sim_name]["net"] is not None
@@ -5933,14 +5944,6 @@ def run_opt_button_clicked(
         try:
             # Sim data setup (and related input validation)
             # --------------------------------------------------------------------------
-            # Camilo: It seems the function below is not necessary
-            # it's implementation was before my time, so
-            # I am not sure what it supposes to fix.
-            # Test as passing without it. I am going go comment the
-            # code for now in case is needed again.
-            # clear_empty_trash_simulations(simulation_data)
-
-            # clear empty trash simulations
             #
             # AES: a "trash" simulation appears to be created (named "default") even if
             # all a user does is load an external dipole data file. However, I do not
