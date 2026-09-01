@@ -1406,7 +1406,7 @@ class _VizManager:
             logger.error("No data has been simulated or loaded")
             return
 
-        sim_name = None
+        data_name = None
         template_name = self.widgets["templates_dropdown"].value
         is_sim_data_template = _check_template_type_is_sim_data_dependent(template_name)
         is_experimental_data = template_name in _experimental_data_templates
@@ -1421,8 +1421,8 @@ class _VizManager:
                 if is_sim_data_template
                 else data_store.experimental_data
             )
-            sim_name = self.widgets[dropdown_key].value
-            if sim_name not in available_data:
+            data_name = self.widgets[dropdown_key].value
+            if data_name not in available_data:
                 logger.error("No simulation data has been simulated")
                 return
 
@@ -1459,26 +1459,26 @@ class _VizManager:
 
         # Plot data
         # This case only applies when the "Make figure" button in the viz tab  is clicked
-        if sim_name is not None and ax_plots is not None:
+        if data_name is not None and ax_plots is not None:
             fig_name = _idx2figname(self.data["fig_idx"]["idx"] - 1)
             self._draw_simulation_data(
-                fig_name, sim_name, template_name, ax_plots, preprocessing_config
+                fig_name, data_name, template_name, ax_plots, preprocessing_config
             )
             logger.info(
-                f"Figure {template_name} for simulation {sim_name} has been created"
+                f"Figure {template_name} for simulation {data_name} has been created"
             )
 
     def _simulate_add_fig(self):
         self.make_fig_button.click()
 
     def _draw_simulation_data(
-        self, fig_name, sim_name, template_name, ax_plots, preprocessing_config=None
+        self, fig_name, data_name, template_name, ax_plots, preprocessing_config=None
     ):
         preprocessing_config = preprocessing_config or {}
         # get figs per axis
         for ax_name, plot_type in ax_plots:
             self._simulate_edit_figure(
-                fig_name, ax_name, sim_name, plot_type, preprocessing_config, "plot"
+                fig_name, ax_name, data_name, plot_type, preprocessing_config, "plot"
             )
         # template post-processing
         fig_key = self.data["fig_idx"]["idx"] - 1
