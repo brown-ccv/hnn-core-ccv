@@ -1571,7 +1571,8 @@ class HNNGUI:
         # The new data should overwrite the prior data of the same name
         # The GUI status bar at the bottom should switch to state that looks yellow (indicating "warning")
         # The log should have a warning that the user has OVERWRITTEN the data of that name, and so will need to redo any existing visualizations or optimizations using the new version of the data, since the prior results may no longer be accurate.
-        if data_store.experimental_data.get(data_filename) is not None:
+        is_overwrite = data_store.experimental_data.get(data_filename) is not None
+        if is_overwrite:
             logger.warning(f""" External data {data_filename} has been overwritten. \
                            User will need to redo any existing visualizations or \
                            optimizations using the new version of the data, \
@@ -1617,9 +1618,10 @@ class HNNGUI:
                 operation="plot",
             )
             self.viz_manager.last_action = UiAction.NONE
-            self._simulation_status_bar.value = self._simulation_status_contents[
-                "loaded"
-            ]
+            if not is_overwrite:
+                self._simulation_status_bar.value = self._simulation_status_contents[
+                    "loaded"
+                ]
 
     def _update_target_dipole_data_widget(self):
         """refresh gui.opt_target_widgets["target_dipole_data"] dropdown using data_store"""
