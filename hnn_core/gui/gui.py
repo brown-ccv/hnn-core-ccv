@@ -688,7 +688,7 @@ class HNNGUI:
                     Simulation finished
                 </div>
             """,
-            "failed": """
+            "simulation_failed": """
                 <div
                 class='sim-status-box'
                 style='
@@ -697,6 +697,17 @@ class HNNGUI:
                     color:black;
                 '>
                     Simulation failed
+                </div>
+            """,
+            "loading_failed": """
+                <div
+                class='sim-status-box'
+                style='
+                    background:var(--gentle-red);
+                    padding-left:10px;
+                    color:black;
+                '>
+                    Loading data failed
                 </div>
             """,
             "warning": """
@@ -718,7 +729,6 @@ class HNNGUI:
                     background:var(--gentle-green);
                     padding-left:10px;
                     color:black;
-                    font-weight:bold;
                 '>
                     Experimental Data Loaded
                 </div>
@@ -1348,7 +1358,7 @@ class HNNGUI:
                 self._on_upload_experimental_data(file_path=change["new"][0])
             except Exception:
                 self._simulation_status_bar.value = self._simulation_status_contents[
-                    "failed"
+                    "simulation_failed"
                 ]
                 logger.error(traceback.format_exc())
                 return
@@ -1562,15 +1572,21 @@ class HNNGUI:
                 .strip()
             )
             self._simulation_status_bar.value = self._simulation_status_contents[
-                "failed"
+                "loading_failed"
             ]
             return
 
-        # Decision: In the case where a user wants to upload an experimental data file that is of the same name of
-        # an existing experimental data file, then:
-        # The new data should overwrite the prior data of the same name
-        # The GUI status bar at the bottom should switch to state that looks yellow (indicating "warning")
-        # The log should have a warning that the user has OVERWRITTEN the data of that name, and so will need to redo any existing visualizations or optimizations using the new version of the data, since the prior results may no longer be accurate.
+        # Decision from
+        # https://github.com/jonescompneurolab/hnn-core/pull/1328#issuecomment-5444471136
+        # In the case where a user wants to upload an experimental data file
+        # that is of the same name of an existing experimental data file, then:
+        # - The new data should overwrite the prior data of the same name
+        # - The GUI status bar at the bottom should switch to state that looks yellow
+        #   (indicating "warning")
+        # - The log should have a warning that the user has OVERWRITTEN the data of that
+        #   name, and so will need to redo any existing visualizations or optimizations
+        #   using the new version of the data, since the prior results may no longer be
+        #   accurate.
         is_overwrite = data_store.experimental_data.get(data_filename) is not None
         if is_overwrite:
             logger.warning(f""" External data {data_filename} has been overwritten. \
@@ -4981,7 +4997,7 @@ def run_button_clicked(
             .strip()
         )
 
-        simulation_status_bar.value = simulation_status_contents["failed"]
+        simulation_status_bar.value = simulation_status_contents["simulation_failed"]
         return
 
     with log_out:
@@ -5075,7 +5091,9 @@ def run_button_clicked(
                 )
 
         except Exception:
-            simulation_status_bar.value = simulation_status_contents["failed"]
+            simulation_status_bar.value = simulation_status_contents[
+                "simulation_failed"
+            ]
             logger.error(traceback.format_exc())
             return
         finally:
@@ -6009,7 +6027,9 @@ def run_opt_button_clicked(
                         optimize towards.
                         """).replace("\n", " ")
                     )
-                    simulation_status_bar.value = simulation_status_contents["failed"]
+                    simulation_status_bar.value = simulation_status_contents[
+                        "simulation_failed"
+                    ]
                     return None
                 elif (opt_rmse_target_data_name == "default") and (
                     not simulation_data["default"]["dpls"]
@@ -6029,7 +6049,9 @@ def run_opt_button_clicked(
                         simulation.
                         """).replace("\n", " ")
                     )
-                    simulation_status_bar.value = simulation_status_contents["failed"]
+                    simulation_status_bar.value = simulation_status_contents[
+                        "simulation_failed"
+                    ]
                     return None
                 else:
                     # Extract the actual target data Like everywhere else in the GUI, we
@@ -6095,7 +6117,9 @@ def run_opt_button_clicked(
                     and try again.
                     """).replace("\n", " ")
                 )
-                simulation_status_bar.value = simulation_status_contents["failed"]
+                simulation_status_bar.value = simulation_status_contents[
+                    "simulation_failed"
+                ]
                 return None
 
             # Instantiate our Optimizer object
@@ -6194,7 +6218,9 @@ def run_opt_button_clicked(
                         f"Optimization fitting failed due to exception: '{e}'",
                         exc_info=True,
                     )
-                    simulation_status_bar.value = simulation_status_contents["failed"]
+                    simulation_status_bar.value = simulation_status_contents[
+                        "simulation_failed"
+                    ]
                     raise
 
                 # ----------------------------------------------------------------------
@@ -6266,7 +6292,9 @@ def run_opt_button_clicked(
                         iterations in order to start converging.
                         """).replace("\n", " ")
                     )
-                    simulation_status_bar.value = simulation_status_contents["failed"]
+                    simulation_status_bar.value = simulation_status_contents[
+                        "simulation_failed"
+                    ]
                 else:
                     simulation_status_bar.value = simulation_status_contents["finished"]
 
@@ -6384,7 +6412,9 @@ def run_opt_button_clicked(
             return optimized_config, opt_result
 
         except Exception:
-            simulation_status_bar.value = simulation_status_contents["failed"]
+            simulation_status_bar.value = simulation_status_contents[
+                "simulation_failed"
+            ]
             logger.error(traceback.format_exc())
             return
 

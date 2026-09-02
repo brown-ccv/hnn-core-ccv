@@ -2133,7 +2133,10 @@ def test_gui_optimization_no_constraints(setup_gui):
 
     # Check that optimization was marked as failed, and the appropriate error message
     # was logged
-    assert gui._simulation_status_bar.value == gui._simulation_status_contents["failed"]
+    assert (
+        gui._simulation_status_bar.value
+        == gui._simulation_status_contents["simulation_failed"]
+    )
     assert any(
         "You have not selected any parameters to constrain" in entry["text"]
         for entry in gui._log_out.outputs
@@ -2157,7 +2160,10 @@ def test_gui_optimization_no_target_data(setup_gui):
 
     # Check that optimization was marked as failed, and the appropriate error message
     # was logged
-    assert gui._simulation_status_bar.value == gui._simulation_status_contents["failed"]
+    assert (
+        gui._simulation_status_bar.value
+        == gui._simulation_status_contents["simulation_failed"]
+    )
     assert any(
         "You have not selected a dataset to use as the target" in entry["text"]
         for entry in gui._log_out.outputs
@@ -2527,7 +2533,10 @@ def test_gui_upload_data_name_conflicts_with_simulation(setup_gui):
 
     # The conflicting upload should be rejected, not added to experimental_data
     assert sim_name not in data_store.experimental_data
-    assert gui._simulation_status_bar.value == gui._simulation_status_contents["failed"]
+    assert (
+        gui._simulation_status_bar.value
+        == gui._simulation_status_contents["loading_failed"]
+    )
     assert any(
         f"Cannot load external data named '{sim_name}'" in entry["text"]
         and "already exists" in entry["text"]
@@ -2546,7 +2555,10 @@ def test_gui_upload_data_name_conflicts_with_simulation(setup_gui):
     gui.widget_simulation_name.value = sim_name2
     gui.run_button.click()
     assert sim_name not in data_store.experimental_data
-    assert gui._simulation_status_bar.value == gui._simulation_status_contents["failed"]
+    assert (
+        gui._simulation_status_bar.value
+        == gui._simulation_status_contents["simulation_failed"]
+    )
     assert any(
         f"Cannot run simulation named '{sim_name2}'" in entry["text"]
         and "already exists" in entry["text"]
