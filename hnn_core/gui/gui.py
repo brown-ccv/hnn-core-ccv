@@ -1488,9 +1488,8 @@ class HNNGUI:
             (self.widget_opt_scaling, "value"),
         )
 
-    def _on_upload_experimental_data(self, file_path):
+    def _on_upload_experimental_data(self, data_dict):
         # Parsing path into filename and extension
-        data_dict = file_path
         dict_name = data_dict["name"].rsplit(".", 1)
         data_filename = dict_name[0]
         file_extension = f".{dict_name[1]}"
