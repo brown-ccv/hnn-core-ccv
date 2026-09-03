@@ -1292,7 +1292,7 @@ class HNNGUI:
                 self._on_upload_experimental_data(file_path=change["new"][0])
             except Exception:
                 self._simulation_status_bar.value = self._simulation_status_contents[
-                    "simulation_failed"
+                    "loading_failed"
                 ]
                 logger.error(traceback.format_exc())
                 return
