@@ -1289,7 +1289,7 @@ class HNNGUI:
             if not change["owner"].value:
                 return
             try:
-                self._on_upload_experimental_data(file_path=change["new"][0])
+                self._on_upload_experimental_data(data_dict=change["new"][0])
             except Exception:
                 self._simulation_status_bar.value = self._simulation_status_contents[
                     "loading_failed"
