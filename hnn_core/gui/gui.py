@@ -189,6 +189,10 @@ global_gain_type_lookup_dict = {
 }
 
 
+def _status_box_html(css_class, message):
+    return f"<div class='sim-status-box {css_class}'>{message}</div>"
+
+
 class _OutputWidgetHandler(logging.Handler):
     def __init__(self, output_widget, *args, **kwargs):
         data_store.reset()
@@ -642,98 +646,28 @@ class HNNGUI:
         # We directly set up the html for the status bar below.
         #   - child of status-bar
         #   - associated html class: sim-status-box
-        # Note: This dict is referenced in _init_ui_components and run_button_clicked:
-        self._simulation_status_contents = {
-            "not_running": """
-                <div
-                class='sim-status-box'
-                style='
-                    background:var(--acs-friendly-background);
-                    padding-left:10px;
-                    color:white;
-                '>
-                    Not running
-                </div>
-            """,
-            "running": """
-                <div
-                class='sim-status-box status-running'
-                style='
-                    background:var(--statusbar-running);
-                    padding-left:10px;
-                    color:black;
-                '>
-                    Running...
-                </div>
-            """,
-            "opt_running": """
-                <div
-                class='sim-status-box status-running'
-                style='
-                    background:var(--statusbar-running);
-                    padding-left:10px;
-                    color:white;
-                '>
-                    Optimization Running, please be patient...
-                </div>
-            """,
-            "finished": """
-                <div
-                class='sim-status-box'
-                style='
-                    background:var(--gentle-green);
-                    padding-left:10px;
-                    color:black;
-                '>
-                    Simulation finished
-                </div>
-            """,
-            "simulation_failed": """
-                <div
-                class='sim-status-box'
-                style='
-                    background:var(--gentle-red);
-                    padding-left:10px;
-                    color:black;
-                '>
-                    Simulation failed
-                </div>
-            """,
-            "loading_failed": """
-                <div
-                class='sim-status-box'
-                style='
-                    background:var(--gentle-red);
-                    padding-left:10px;
-                    color:black;
-                '>
-                    Loading data failed
-                </div>
-            """,
-            "warning": """
-                <div
-                class='sim-status-box'
-                style='
-                    background:var(--statusbar-running);
-                    padding-left:10px;
-                    color:black;
-                    font-weight:bold;
-                '>
-                    Operation Warning
-                </div>
-            """,
-            "loaded": """
-                <div
-                class='sim-status-box'
-                style='
-                    background:var(--gentle-green);
-                    padding-left:10px;
-                    color:black;
-                '>
-                    Experimental Data Loaded
-                </div>
-            """,
+        #
+        # Refactor 9/2/2026
+        # The dict maps a key to  the css class defined in gui_styles.css
+        # and the display message(i.e .sim-status-box.status-*)
+        # this dict is referenced in _init_ui_components and run_button_clicked.
+        _STATUS_BOX_CONFIG = {
+            "not_running": ("status-not-running", "Not running"),
+            "running": ("status-running", "Running..."),
+            "opt_running": (
+                "status-opt-running",
+                "Optimization Running, please be patient...",
+            ),
+            "finished": ("status-finished", "Simulation finished"),
+            "simulation_failed": ("status-failed", "Simulation failed"),
+            "loading_failed": ("status-failed", "Loading data failed"),
+            "warning": ("status-warning", "Operation Warning"),
+            "loaded": ("status-finished", "Experimental Data Loaded"),
         }
+
+        self._simulation_status_contents = {}
+        for key, (css_class, message) in _STATUS_BOX_CONFIG.items():
+            self._simulation_status_contents[key] = _status_box_html(css_class, message)
 
         # ----------------------------------------------------------------------
         # Set up the GUI widgets and their contents
