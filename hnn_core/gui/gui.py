@@ -648,8 +648,8 @@ class HNNGUI:
         #   - associated html class: sim-status-box
         #
         # Refactor 9/2/2026
-        # The dict maps a key to  the css class defined in gui_styles.css
-        # and the display message(i.e .sim-status-box.status-*)
+        # _status_box_config maps a status-bar key to both a CSS class defined in 'gui_styles.css'
+        # and to a display message (i.e. .sim-status-box.status-*).
         # this dict is referenced in _init_ui_components and run_button_clicked.
         _STATUS_BOX_CONFIG = {
             "not_running": ("status-not-running", "Not running"),
@@ -2436,11 +2436,6 @@ class HNNGUI:
         # Set `_external_data_widget` to `opt_target_widgets["target_dipole_data"]` when
         # simulation data changes or upon initial GUI creation.
         #
-        # Note: this is what first creates the `VizManager` object's
-        # `_external_data_widget` attribute!
-        # self.viz_manager._external_data_widget = self.opt_target_widgets[
-        #     "target_dipole_data"
-        # ]
 
         self.opt_target_widgets["n_trials"] = BoundedIntText(
             value=prior_target_state.get("n_trials", 1),
